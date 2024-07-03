@@ -1,0 +1,17 @@
+[33mcommit 8503a6a1ea2b51f8b84ef92fade4d835507b2f3e[m[33m ([m[1;36mHEAD -> [m[1;32mrealese-zoe[m[33m, [m[1;32mmaster[m[33m)[m
+Author: @zoevidal523 <zoevidal523@gmail.com>
+Date:   Wed Jul 3 16:50:14 2024 -0300
+
+    1er commit para ver si anda
+
+[33mcommit 330162a0da6b86bdfc8ae598e4a43846c50b2448[m[33m ([m[1;31morigin/master[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Lucas Tonelotto <lucasfrantone@gmail.com>
+Date:   Tue Jul 2 18:17:38 2024 -0300
+
+    Agregar archivos de proyecto.
+
+[33mcommit 8d92e47b622accf6fc26019d50702760d2b5fb5f[m
+Author: Lucas Tonelotto <lucasfrantone@gmail.com>
+Date:   Tue Jul 2 18:17:35 2024 -0300
+
+    Agregar .gitattributes y .gitignore.
