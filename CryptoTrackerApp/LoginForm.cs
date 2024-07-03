@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Windows.Forms;
 using Supabase;
-// Agregar el espacio de nombres de MainForm si está en otro namespace
-using CryptoTrackerApp;
 
 namespace CryptoTrackerApp
 {
@@ -13,7 +11,7 @@ namespace CryptoTrackerApp
 
         public LoginForm()
         {
-            //InitializeComponent();
+            InitializeComponent();
             InitializeSupabase();
         }
 
@@ -29,25 +27,21 @@ namespace CryptoTrackerApp
             catch (Exception ex)
             {
                 MessageBox.Show("Error initializing Supabase: " + ex.Message);
-                // Manejo adecuado si supabaseClient no se inicializa correctamente
                 this.Close(); // Cierra la aplicación si no puede inicializar Supabase
             }
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            var username = txtUsername.Text;
-            var password = txtPassword.Text;
+            var username = txtPassword.Text;
+            var password = txtUsername.Text;
 
             try
             {
                 var response = await supabaseClient
                     .From<Client>()
-                    .Select(x => new object[] { x.username, x.password })
-                    .Where(x => x.username == username)
-                    .Where(x => x.password == password)
-                    .Single();
-
+                    .Where(x => x.username == username && x.password == password)
+                    .Get();
 
                 if (response.Models.Any())
                 {
