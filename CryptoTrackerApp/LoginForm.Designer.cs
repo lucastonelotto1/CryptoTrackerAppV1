@@ -1,4 +1,5 @@
-﻿namespace CryptoTrackerApp
+﻿
+namespace CryptoTrackerApp
 {
     partial class LoginForm : Form
     {
@@ -97,6 +98,7 @@
             btnLogin.TabIndex = 6;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
+            btnLogin.Click += btnLogin_Click;
             // 
             // LoginForm
             // 
@@ -114,6 +116,16 @@
             Text = "LoginForm";
             ResumeLayout(false);
             PerformLayout();
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
