@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Windows.Forms;
 using Supabase;
-// Agregar el espacio de nombres de MainForm si está en otro namespace
-using CryptoTrackerApp;
 
 namespace CryptoTrackerApp
 {
@@ -13,7 +11,7 @@ namespace CryptoTrackerApp
 
         public LoginForm()
         {
-            //InitializeComponent();
+            InitializeComponent();
             InitializeSupabase();
         }
 
@@ -21,33 +19,29 @@ namespace CryptoTrackerApp
         {
             try
             {
-                string url = "https://your-project-url.supabase.co";
-                string key = "your-api-key";
+                string url = "https://cjulheqhpurkozgepnja.supabase.co";
+                string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
                 supabaseClient = new Supabase.Client(url, key);
                 supabaseClient.InitializeAsync().Wait(); // Asegurarse de que la inicialización esté completa
             }
             catch (Exception ex)
             {
                 MessageBox.Show("Error initializing Supabase: " + ex.Message);
-                // Manejo adecuado si supabaseClient no se inicializa correctamente
                 this.Close(); // Cierra la aplicación si no puede inicializar Supabase
             }
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            var username = txtUsername.Text;
-            var password = txtPassword.Text;
+            var username = txtPassword.Text;
+            var password = txtUsername.Text;
 
             try
             {
                 var response = await supabaseClient
                     .From<Client>()
-                    .Select(x => new object[] { x.username, x.password })
-                    .Where(x => x.username == username)
-                    .Where(x => x.password == password)
-                    .Single();
-
+                    .Where(x => x.username == username && x.password == password)
+                    .Get();
 
                 if (response.Models.Any())
                 {
@@ -69,6 +63,16 @@ namespace CryptoTrackerApp
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }

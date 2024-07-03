@@ -6,7 +6,7 @@ namespace CryptoTrackerApp
 {
     public class Client : BaseModel
     {
-        [PrimaryKey("username")]
+        [Column("username")]
         public string username { get; set; }
 
         [Column("password")]
