@@ -30,6 +30,7 @@ namespace CryptoTrackerApp
             }
         }
 
+        /*
         private async void btnLogin_Click(object sender, EventArgs e)
         {
             var email = txtUsername.Text;
@@ -59,7 +60,49 @@ namespace CryptoTrackerApp
             {
                 MessageBox.Show("An error occurred: " + ex.Message);
             }
+        }*/
+
+
+        private async void btnLogin_Click(object sender, EventArgs e)
+        {
+            var email = txtUsername.Text;
+            var password = txtPassword.Text;
+
+            try
+            {
+                var response = await supabaseClient.Auth.SignIn(email, password);
+
+                if (response != null && response.AccessToken != null)
+                {
+                    string jwtToken = response.AccessToken;
+
+                    // Securely store the token
+                    bool tokenStored = SecureTokenStorage.StoreToken(jwtToken);
+
+                    if (tokenStored)
+                    {
+                        // Supabase handles session management with the token
+                        MainForm mainForm = new MainForm();
+                        mainForm.Show();
+                        this.Hide();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error storing token. Please try again.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Invalid credentials, please try again.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred: " + ex.Message);
+            }
         }
+
+
 
         private void btnCancel_Click(object sender, EventArgs e)
         {
