@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+/*
 namespace CryptoTrackerApp
 {
     public class DatabaseHelper
@@ -46,3 +47,4 @@ namespace CryptoTrackerApp
         public string PriceUsd { get; set; }
     }
 }
+*/
