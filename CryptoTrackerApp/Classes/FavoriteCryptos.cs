@@ -11,9 +11,9 @@ namespace CryptoTrackerApp.Classes
     public class FavoriteCryptos : BaseModel
     {
         [PrimaryKey("idUser", false)]
-        public Guid IdUser { get; set; }
+        public Guid idUser { get; set; }
 
         [Column("idCrypto")]
-        public string[] IdCrypto { get; set; }
+        public string[] idCrypto { get; set; }
     }
 }

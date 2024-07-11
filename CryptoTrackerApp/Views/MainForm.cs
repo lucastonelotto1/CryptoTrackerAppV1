@@ -7,6 +7,8 @@ using Supabase;
 using Newtonsoft.Json;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
+using CryptoTrackerApp.Classes;
+using System.Windows.Forms;
 
 namespace CryptoTrackerApp
 {
@@ -92,17 +94,11 @@ namespace CryptoTrackerApp
         private Button btnRemoveCrypto;
         private Button btnAddCrypto;
 
-        private class FavoriteCryptos : BaseModel
-        {
-            [PrimaryKey("idUser", false)]
-            public Guid IdUser { get; set; }
-
-            [Column("idCrypto")]
-            public string[] IdCrypto { get; set; }
-        }
+        
 
         private async void LoadCryptoAssets()
         {
+
             try
             {
                 Guid userIdGuid;
@@ -114,13 +110,13 @@ namespace CryptoTrackerApp
 
                 var favoriteCryptos = await supabaseClient
                     .From<FavoriteCryptos>()
-                    .Where(x => x.IdUser == userIdGuid)
+                    .Where(x => x.idUser == userIdGuid)
                     .Get();
 
                 if (favoriteCryptos != null)
                 {
-                    string json = JsonConvert.SerializeObject(favoriteCryptos.IdCrypto);
-                    dataGridViewCryptoAssets.DataSource = favoriteCryptos.IdCrypto;
+                    string json = JsonConvert.SerializeObject(favoriteCryptos);
+                    dataGridViewCryptoAssets.DataSource = favoriteCryptos;
                 }
                 else
                 {
@@ -170,6 +166,8 @@ namespace CryptoTrackerApp
                 MessageBox.Show("Please select a crypto asset to set an alert.");
             }
         }
+       
+       
     }
 
 
