@@ -35,6 +35,8 @@ namespace CryptoTrackerApp
 
         private void InitializeComponent()
         {
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             dataGridViewCryptoAssets = new DataGridView();
             btnAddCrypto = new Button();
             btnViewDetails = new Button();
@@ -44,52 +46,80 @@ namespace CryptoTrackerApp
             // 
             // dataGridViewCryptoAssets
             // 
-            dataGridViewCryptoAssets.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
+            dataGridViewCryptoAssets.AllowUserToAddRows = false;
+            dataGridViewCryptoAssets.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewCryptoAssets.BackgroundColor = Color.FromArgb(0, 18, 30);
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Control;
+            dataGridViewCellStyle1.Font = new Font("Sans Serif Collection", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle1.ForeColor = SystemColors.WindowText;
+            dataGridViewCellStyle1.SelectionBackColor = SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridViewCryptoAssets.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewCryptoAssets.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCryptoAssets.Location = new Point(12, 12);
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle2.Font = new Font("Sans Serif Collection", 6F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(56, 152, 213);
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridViewCryptoAssets.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCryptoAssets.GridColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCryptoAssets.Location = new Point(115, 42);
+            dataGridViewCryptoAssets.Margin = new Padding(3, 7, 3, 3);
+            dataGridViewCryptoAssets.MultiSelect = false;
             dataGridViewCryptoAssets.Name = "dataGridViewCryptoAssets";
+            dataGridViewCryptoAssets.ReadOnly = true;
             dataGridViewCryptoAssets.RowHeadersWidth = 51;
-            dataGridViewCryptoAssets.Size = new Size(1253, 373);
-            dataGridViewCryptoAssets.TabIndex = 0;
+            dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewCryptoAssets.Size = new Size(1068, 341);
+            dataGridViewCryptoAssets.TabIndex = 4;
             // 
             // btnAddCrypto
             // 
+            btnAddCrypto.BackColor = Color.FromArgb(64, 228, 175);
             btnAddCrypto.Location = new Point(97, 407);
             btnAddCrypto.Name = "btnAddCrypto";
             btnAddCrypto.Size = new Size(144, 44);
             btnAddCrypto.TabIndex = 1;
             btnAddCrypto.Text = "Add Crypto";
-            btnAddCrypto.UseVisualStyleBackColor = true;
+            btnAddCrypto.UseVisualStyleBackColor = false;
             btnAddCrypto.Click += btnAddCrypto_Click;
             // 
             // btnViewDetails
             // 
+            btnViewDetails.BackColor = Color.FromArgb(64, 228, 175);
             btnViewDetails.Location = new Point(552, 407);
             btnViewDetails.Name = "btnViewDetails";
             btnViewDetails.Size = new Size(186, 44);
             btnViewDetails.TabIndex = 2;
             btnViewDetails.Text = "View Details";
-            btnViewDetails.UseVisualStyleBackColor = true;
+            btnViewDetails.UseVisualStyleBackColor = false;
             btnViewDetails.Click += btnViewDetails_Click;
             // 
             // btnRemoveCrypto
             // 
+            btnRemoveCrypto.BackColor = Color.FromArgb(64, 228, 175);
             btnRemoveCrypto.Location = new Point(1047, 407);
             btnRemoveCrypto.Name = "btnRemoveCrypto";
             btnRemoveCrypto.Size = new Size(146, 44);
             btnRemoveCrypto.TabIndex = 3;
             btnRemoveCrypto.Text = "Remove Crypto";
-            btnRemoveCrypto.UseVisualStyleBackColor = true;
+            btnRemoveCrypto.UseVisualStyleBackColor = false;
             btnRemoveCrypto.Click += btnRemoveCrypto_Click;
             // 
             // MainForm
             // 
+            BackColor = Color.FromArgb(0, 18, 30);
             ClientSize = new Size(1277, 473);
             Controls.Add(btnRemoveCrypto);
             Controls.Add(btnViewDetails);
             Controls.Add(btnAddCrypto);
             Controls.Add(dataGridViewCryptoAssets);
             Name = "MainForm";
+            Load += MainForm_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridViewCryptoAssets).EndInit();
             ResumeLayout(false);
         }
@@ -145,10 +175,6 @@ namespace CryptoTrackerApp
         }
 
 
-
-
-
-
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
             // Lógica para agregar una criptomoneda
@@ -163,8 +189,8 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
-               // var detailsForm = new DetailsForm(selectedAsset);
-               // detailsForm.ShowDialog();
+                // var detailsForm = new DetailsForm(selectedAsset);
+                // detailsForm.ShowDialog();
             }
             else
             {
@@ -185,8 +211,11 @@ namespace CryptoTrackerApp
                 MessageBox.Show("Please select a crypto asset to set an alert.");
             }
         }
-       
-       
+
+        private void MainForm_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 
 
