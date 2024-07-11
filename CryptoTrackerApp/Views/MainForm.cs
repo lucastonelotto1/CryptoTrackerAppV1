@@ -108,20 +108,20 @@ namespace CryptoTrackerApp
                     return;
                 }
 
-                var favoriteCryptos = await supabaseClient
-                    .From<FavoriteCryptos>()
-                    .Where(x => x.idUser == userIdGuid)
-                    .Get();
+                /*  var favoriteCryptos = await supabaseClient
+                      .From<FavoriteCryptos>()
+                      .Where(x => x.idUser == userIdGuid)
+                      .Get();
 
-                if (favoriteCryptos != null)
-                {
-                    string json = JsonConvert.SerializeObject(favoriteCryptos);
-                    dataGridViewCryptoAssets.DataSource = favoriteCryptos;
-                }
-                else
-                {
-                    MessageBox.Show("No favorite cryptos found for this user.");
-                }
+                  if (favoriteCryptos != null)
+                  {
+                      string json = JsonConvert.SerializeObject(favoriteCryptos);
+                      dataGridViewCryptoAssets.DataSource = favoriteCryptos;
+                  }
+                  else
+                  {
+                      MessageBox.Show("No favorite cryptos found for this user.");
+                  } */
             }
             catch (Exception ex)
             {
@@ -143,7 +143,7 @@ namespace CryptoTrackerApp
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
-                var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
+               // var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
                // var detailsForm = new DetailsForm(selectedAsset);
                // detailsForm.ShowDialog();
             }
@@ -157,7 +157,7 @@ namespace CryptoTrackerApp
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
-                var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
+               // var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
                 //var setAlertForm = new SetAlertForm(selectedAsset);
                 //setAlertForm.ShowDialog();
             }

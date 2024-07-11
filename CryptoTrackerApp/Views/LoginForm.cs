@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using CryptoTrackerApp.Views;
 using Supabase;
 
 namespace CryptoTrackerApp
@@ -45,9 +46,14 @@ namespace CryptoTrackerApp
                     //Properties.Settings.Default.JWTToken = session.AccessToken;
                     //Properties.Settings.Default.Save();
 
-                   MainForm mainForm = new MainForm();
-                   mainForm.Show();
+                  // MainForm mainForm = new MainForm();
+                  // mainForm.Show();
+                  //  this.Hide();
+
+                    AssetGridForm asset = new AssetGridForm();
+                    asset.Show();
                     this.Hide();
+
                 }
                 else
                 {
