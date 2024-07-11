@@ -9,6 +9,11 @@ using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 using CryptoTrackerApp.Classes;
 using System.Windows.Forms;
+using System.Linq;
+using System.Collections.Generic;
+
+
+
 
 namespace CryptoTrackerApp
 {
@@ -94,11 +99,10 @@ namespace CryptoTrackerApp
         private Button btnRemoveCrypto;
         private Button btnAddCrypto;
 
-        
+
 
         private async void LoadCryptoAssets()
         {
-
             try
             {
                 Guid userIdGuid;
@@ -108,15 +112,26 @@ namespace CryptoTrackerApp
                     return;
                 }
 
-                var favoriteCryptos = await supabaseClient
+                var response = await supabaseClient
                     .From<FavoriteCryptos>()
-                    .Where(x => x.idUser == userIdGuid)
+                    .Where(x => x.IdUser == userIdGuid)
                     .Get();
 
-                if (favoriteCryptos != null)
+                var favoriteCryptos = response.Models;
+
+                if (favoriteCryptos != null && favoriteCryptos.Any())
                 {
-                    string json = JsonConvert.SerializeObject(favoriteCryptos);
-                    dataGridViewCryptoAssets.DataSource = favoriteCryptos;
+                    // Transform the results to only get the IdCrypto arrays
+                    var idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
+
+                    // Display the result in the DataGridView (or use it as needed)
+                    dataGridViewCryptoAssets.DataSource = idCryptoArray
+                        .Select(id => new { IdCrypto = id })
+                        .ToList();
+
+                    // Show the JSON representation for debugging
+                    string json = JsonConvert.SerializeObject(idCryptoArray);
+                    //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + json);
                 }
                 else
                 {
@@ -128,6 +143,10 @@ namespace CryptoTrackerApp
                 MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
             }
         }
+
+
+
+
 
 
         private void btnAddCrypto_Click(object sender, EventArgs e)
