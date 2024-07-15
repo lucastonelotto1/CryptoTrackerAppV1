@@ -45,8 +45,8 @@ namespace CryptoTrackerApp
                     //Properties.Settings.Default.JWTToken = session.AccessToken;
                     //Properties.Settings.Default.Save();
 
-                   MainForm mainForm = new MainForm();
-                   mainForm.Show();
+                    MainForm mainForm = new MainForm();
+                    mainForm.Show();
                     this.Hide();
                 }
                 else
@@ -63,6 +63,11 @@ namespace CryptoTrackerApp
         private void btnCancel_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }
