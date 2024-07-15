@@ -367,11 +367,11 @@ namespace CryptoTrackerApp
                     if (favoriteCryptos != null)
                     {
                         List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
-                        MessageBox.Show(selectedCryptoId);
+                        //MessageBox.Show(selectedCryptoId);
                         if (idCryptoList.Contains(selectedCryptoId))
                         {
                             idCryptoList.Remove(selectedCryptoId);
-
+                            
                             favoriteCryptos.IdCrypto = idCryptoList.ToArray();
 
                             var updateResponse = await supabaseClient
@@ -380,7 +380,7 @@ namespace CryptoTrackerApp
 
                             if (updateResponse != null)
                             {
-                                MessageBox.Show("Crypto removed from favorites successfully.");
+                                //MessageBox.Show("Crypto removed from favorites successfully.");
                                 // Limpia el DataGridView antes de recargar los datos
                                 dataGridViewCryptoAssets.Rows.Clear();
                                 LoadCryptoAssets();

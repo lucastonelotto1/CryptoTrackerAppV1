@@ -42,7 +42,7 @@ namespace CryptoTrackerApp
             label1.AutoSize = true;
             label1.Font = new Font("Sans Serif Collection", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.FromArgb(56, 152, 213);
-            label1.Location = new Point(107, 68);
+            label1.Location = new Point(107, 71);
             label1.Name = "label1";
             label1.Size = new Size(172, 35);
             label1.TabIndex = 0;
@@ -94,10 +94,11 @@ namespace CryptoTrackerApp
             // btnLogin
             // 
             btnLogin.BackColor = Color.FromArgb(64, 228, 175);
+            btnLogin.Cursor = Cursors.Hand;
             btnLogin.Location = new Point(120, 236);
             btnLogin.Margin = new Padding(3, 2, 3, 2);
             btnLogin.Name = "btnLogin";
-            btnLogin.Size = new Size(159, 27);
+            btnLogin.Size = new Size(159, 38);
             btnLogin.TabIndex = 6;
             btnLogin.Text = "Login";
             btnLogin.UseVisualStyleBackColor = false;
