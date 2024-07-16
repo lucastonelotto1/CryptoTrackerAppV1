@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using System.Windows.Forms;
 using Supabase;
 
@@ -33,18 +32,19 @@ namespace CryptoTrackerApp
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
-            var username = txtPassword.Text;
-            var password = txtUsername.Text;
+            var email = txtUsername.Text;
+            var password = txtPassword.Text;
 
             try
             {
-                var response = await supabaseClient
-                    .From<Client>()
-                    .Where(x => x.username == username && x.password == password)
-                    .Get();
+                var session = await supabaseClient.Auth.SignIn(email, password);
 
-                if (response.Models.Any())
+                if (session != null && session.AccessToken != null)
                 {
+                    // Almacenar el token en las propiedades de configuración
+                    //Properties.Settings.Default.JWTToken = session.AccessToken;
+                    //Properties.Settings.Default.Save();
+
                     MainForm mainForm = new MainForm();
                     mainForm.Show();
                     this.Hide();
@@ -65,12 +65,7 @@ namespace CryptoTrackerApp
             this.Close();
         }
 
-        private void label1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void label2_Click(object sender, EventArgs e)
+        private void LoginForm_Load(object sender, EventArgs e)
         {
 
         }
