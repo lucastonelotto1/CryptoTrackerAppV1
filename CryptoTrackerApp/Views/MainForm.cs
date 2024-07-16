@@ -29,7 +29,7 @@ using System.Windows.Forms;
 using System.Linq;
 using System.Collections.Generic;
 using CryptoTrackerApp;
-
+using CryptoTrackerApp.Views;
 
 
 namespace CryptoTrackerApp
@@ -127,8 +127,8 @@ namespace CryptoTrackerApp
             // 
             // dataGridViewTextBoxColumn2
             // 
-            dataGridViewTextBoxColumn2.HeaderText = "ID";
-            dataGridViewTextBoxColumn2.Name = "ID";
+            dataGridViewTextBoxColumn2.HeaderText = "Symbol";
+            dataGridViewTextBoxColumn2.Name = "Symbol";
             dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn3
@@ -237,7 +237,7 @@ namespace CryptoTrackerApp
 
             foreach (var asset in assets)
             {
-                cryptoIds.Add(asset.Id);
+                cryptoIds.Add(asset.Symbol);
             }
 
             string json = JsonConvert.SerializeObject(cryptoIds);
@@ -287,7 +287,7 @@ namespace CryptoTrackerApp
             // Agregar las criptomonedas favoritas al DataGridView
             foreach (var asset in assets)
             {
-                if (FavoriteIds.Contains(asset.Id))
+                if (FavoriteIds.Contains(asset.Symbol))
                 {
                     // Formatear los valores según sea necesario
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
@@ -320,10 +320,10 @@ namespace CryptoTrackerApp
 
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            // Lógica para agregar una criptomoneda
-            //var addCryptoForm = new AddCryptoForm(supabaseClient);
-            //addCryptoForm.ShowDialog();
-            LoadCryptoAssets();
+            InitializeComponent();
+            AssetGridForm assetGridForm = new AssetGridForm();
+            assetGridForm.Show();
+            this.Hide();
         }
 
 
@@ -346,7 +346,7 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["Name"].Value.ToString().ToLower(); // Asegúrate de que el nombre de la columna "ID" coincide
+                string selectedCryptoId = selectedRow.Cells["Symbol"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
 
                 try
                 {

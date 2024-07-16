@@ -1,29 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using CryptoTrackerApp;
 using Newtonsoft.Json;
-using Supabase.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using CryptoTrackerApp.Classes;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Supabase;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
-using System.Windows.Forms;
-using System.Linq;
-using System.Collections.Generic;
 
 public class CoinCapApiClient
 {
@@ -56,4 +36,26 @@ public class CoinCapApiClient
         }
         return assets;
     }
+
+    public async Task<List<CryptoAssetHistory>> GetCryptoAssetHistoryAsync(string id)
+    {
+        string end = DateTime.UtcNow.ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        string start = DateTime.UtcNow.AddMonths(-6).ToString("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        string url = $"https://api.coincap.io/v2/assets/{id}/history?interval=d1&start={start}&end={end}";
+        string json = await client.GetStringAsync(url);
+        dynamic data = JsonConvert.DeserializeObject(json);
+
+        List<CryptoAssetHistory> history = new List<CryptoAssetHistory>();
+        foreach (var item in data.data)
+        {
+            history.Add(new CryptoAssetHistory
+            {
+                Time = item.time,
+                PriceUsd = item.priceUsd
+            });
+        }
+        return history;
+    }
+
+
 }
