@@ -30,6 +30,7 @@ using System.Linq;
 using System.Collections.Generic;
 using CryptoTrackerApp;
 using CryptoTrackerApp.Views;
+using CryptoTracker.Views;
 
 
 namespace CryptoTrackerApp
@@ -47,6 +48,7 @@ namespace CryptoTrackerApp
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
+        private DataGridViewTextBoxColumn Id;
         private string userId = "f3606c6c-072e-4e30-998a-051d73d4153f";
 
         public MainForm()
@@ -76,9 +78,11 @@ namespace CryptoTrackerApp
             dataGridViewTextBoxColumn7 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn8 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn9 = new DataGridViewTextBoxColumn();
+            Id = new DataGridViewTextBoxColumn();
             btnAddCrypto = new Button();
             btnViewDetails = new Button();
             btnRemoveCrypto = new Button();
+            
             ((ISupportInitialize)dataGridViewCryptoAssets).BeginInit();
             SuspendLayout();
             // 
@@ -97,7 +101,7 @@ namespace CryptoTrackerApp
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             dataGridViewCryptoAssets.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewCryptoAssets.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9 });
+            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9, Id });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
             dataGridViewCellStyle2.Font = new Font("Sans Serif Collection", 6F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -122,56 +126,63 @@ namespace CryptoTrackerApp
             // dataGridViewTextBoxColumn1
             // 
             dataGridViewTextBoxColumn1.HeaderText = "Ranking";
-            dataGridViewTextBoxColumn1.Name = "Ranking";
+            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             dataGridViewTextBoxColumn1.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn2
             // 
             dataGridViewTextBoxColumn2.HeaderText = "Symbol";
-            dataGridViewTextBoxColumn2.Name = "Symbol";
+            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn3
             // 
             dataGridViewTextBoxColumn3.HeaderText = "Name";
-            dataGridViewTextBoxColumn3.Name = "Name";
+            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
             dataGridViewTextBoxColumn3.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn4
             // 
             dataGridViewTextBoxColumn4.HeaderText = "Supply";
-            dataGridViewTextBoxColumn4.Name = "Supply";
+            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn5
             // 
             dataGridViewTextBoxColumn5.HeaderText = "Market Cap USD";
-            dataGridViewTextBoxColumn5.Name = "Market Cap USD";
+            dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             dataGridViewTextBoxColumn5.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn6
             // 
             dataGridViewTextBoxColumn6.HeaderText = "Volume USD";
-            dataGridViewTextBoxColumn6.Name = "Volume USD";
+            dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
             dataGridViewTextBoxColumn6.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn7
             // 
             dataGridViewTextBoxColumn7.HeaderText = "Price USD";
-            dataGridViewTextBoxColumn7.Name = "Price USD";
+            dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             dataGridViewTextBoxColumn7.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn8
             // 
             dataGridViewTextBoxColumn8.HeaderText = "Change";
-            dataGridViewTextBoxColumn8.Name = "Change";
+            dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
             dataGridViewTextBoxColumn8.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn9
             // 
             dataGridViewTextBoxColumn9.HeaderText = "VWAP";
-            dataGridViewTextBoxColumn9.Name = "VWAP";
+            dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
             dataGridViewTextBoxColumn9.ReadOnly = true;
+            // 
+            // Id
+            // 
+            Id.HeaderText = "Id";
+            Id.Name = "Id";
+            Id.ReadOnly = true;
+            Id.Visible = false;
             // 
             // btnAddCrypto
             // 
@@ -208,6 +219,7 @@ namespace CryptoTrackerApp
             btnRemoveCrypto.Text = "Remove Crypto";
             btnRemoveCrypto.UseVisualStyleBackColor = false;
             btnRemoveCrypto.Click += btnRemoveCrypto_Click;
+
             // 
             // MainForm
             // 
@@ -297,6 +309,7 @@ namespace CryptoTrackerApp
                     string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
 
                     dataGridViewCryptoAssets.Rows.Add(
+                        
                         asset.Rank,
                         asset.Symbol,
                         asset.Name,
@@ -305,7 +318,8 @@ namespace CryptoTrackerApp
                         formattedVolumeUsd24Hr,
                         formattedPriceUsd,
                         formattedChangePercent24Hr,
-                        formattedVwap24Hr
+                        formattedVwap24Hr,
+                        asset.Id
                     //asset.Explorer
                     );
                 }
@@ -331,15 +345,17 @@ namespace CryptoTrackerApp
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
-                var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
-                // var detailsForm = new DetailsForm(selectedAsset);
-                // detailsForm.ShowDialog();
+                var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
+                string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString(); // Asegúrate de que el nombre de la columna "Id" coincide
+                DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
+                detailsForm.ShowDialog();
             }
             else
             {
                 MessageBox.Show("Please select a crypto asset to view details.");
             }
         }
+
 
         private async void btnRemoveCrypto_Click(object sender, EventArgs e)
         {
