@@ -10,7 +10,8 @@ namespace CryptoTracker.Views
         private System.ComponentModel.IContainer components = null;
         private System.Windows.Forms.DataGridView dataGridViewDetails;
         private System.Windows.Forms.DataVisualization.Charting.Chart chartPriceEvolution;
-
+        private System.Windows.Forms.Button btnHome;
+        private System.Windows.Forms.TextBox txtCoordinates;
         /// <summary>
         /// Limpiar los recursos que se estén usando.
         /// </summary>
@@ -34,14 +35,18 @@ namespace CryptoTracker.Views
         {
             this.dataGridViewDetails = new System.Windows.Forms.DataGridView();
             this.chartPriceEvolution = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.btnHome = new System.Windows.Forms.Button();
+            this.txtCoordinates = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDetails)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartPriceEvolution)).BeginInit();
             this.SuspendLayout();
+
             // 
             // dataGridViewDetails
             // 
             this.dataGridViewDetails.AllowUserToAddRows = false;
             this.dataGridViewDetails.AllowUserToResizeRows = false;
+            this.dataGridViewDetails.BorderStyle = 0; // Sin borde
             this.dataGridViewDetails.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             this.dataGridViewDetails.BackgroundColor = Color.FromArgb(0, 18, 30);
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle
@@ -78,6 +83,7 @@ namespace CryptoTracker.Views
             this.dataGridViewDetails.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             this.dataGridViewDetails.Size = new System.Drawing.Size(960, 100);
             this.dataGridViewDetails.TabIndex = 0;
+
             // 
             // chartPriceEvolution
             // 
@@ -93,13 +99,15 @@ namespace CryptoTracker.Views
                 {
                     MajorGrid = new Grid { LineColor = Color.FromArgb(0, 18, 30) },
                     LineColor = Color.White,
-                    LabelStyle = new LabelStyle { ForeColor = Color.White }
+                    LabelStyle = new LabelStyle { ForeColor = Color.White },
+                    Interval = 1 // Mostrar menos etiquetas en el eje X
                 },
                 AxisY = new Axis
                 {
                     MajorGrid = new Grid { LineColor = Color.FromArgb(0, 18, 30) },
                     LineColor = Color.White,
-                    LabelStyle = new LabelStyle { ForeColor = Color.White }
+                    LabelStyle = new LabelStyle { ForeColor = Color.White },
+                    Minimum = 0, // Ajustar el valor mínimo si es necesario
                 }
             };
             this.chartPriceEvolution.ChartAreas.Add(chartArea1);
@@ -113,13 +121,8 @@ namespace CryptoTracker.Views
                 BorderWidth = 2 // Ancho de la línea
             };
 
-            // Agregar datos de ejemplo
-            series.Points.AddXY(1, 10);
-            series.Points.AddXY(2, 15);
-            series.Points.AddXY(3, 12);
-            series.Points.AddXY(4, 18);
-
-            this.chartPriceEvolution.Series.Add(series);
+            // Habilitar los ToolTips para mostrar los valores
+            this.chartPriceEvolution.GetToolTipText += new EventHandler<ToolTipEventArgs>(chartPriceEvolution_GetToolTipText);
 
             this.chartPriceEvolution.Location = new System.Drawing.Point(12, 130);
             this.chartPriceEvolution.Name = "chartPriceEvolution";
@@ -131,11 +134,42 @@ namespace CryptoTracker.Views
             this.chartPriceEvolution.BorderlineWidth = 0; // Sin borde
             this.chartPriceEvolution.BorderlineDashStyle = ChartDashStyle.Solid; // Estilo de borde
 
+            // Añadir el evento de clic al gráfico
+            this.chartPriceEvolution.MouseClick += new MouseEventHandler(chartPriceEvolution_MouseClick);
+
+            // 
+            // btnHome
+            // 
+            btnHome.BackColor = Color.FromArgb(64, 228, 175);
+            btnHome.Cursor = Cursors.Hand;
+            btnHome.Location = new Point(12, 640);
+            btnHome.Name = "btnHome";
+            btnHome.Size = new Size(100, 40);
+            btnHome.TabIndex = 2;
+            btnHome.Text = "Home";
+            btnHome.UseVisualStyleBackColor = false;
+            btnHome.Click += btnHome_Click;
+            // 
+            // txtCoordinates
+            // 
+            txtCoordinates.BackColor = Color.FromArgb(0, 26, 43);
+            txtCoordinates.BorderStyle = BorderStyle.None;
+            txtCoordinates.Cursor = Cursors.IBeam;
+            txtCoordinates.Font = new Font("Segoe UI", 14F);
+            txtCoordinates.ForeColor = SystemColors.Window;
+            txtCoordinates.Location = new Point(128, 641);
+            txtCoordinates.Name = "txtCoordinates";
+            txtCoordinates.ReadOnly = true;
+            txtCoordinates.Size = new Size(340, 32);
+            txtCoordinates.TabIndex = 3;
+
             // 
             // DetailsForm
             // 
             this.BackColor = Color.FromArgb(0, 18, 30);
-            this.ClientSize = new System.Drawing.Size(1000, 650);
+            this.ClientSize = new System.Drawing.Size(1000, 700); // Aumentar el tamaño del formulario para incluir el botón y el cuadro de texto
+            this.Controls.Add(this.txtCoordinates);
+            this.Controls.Add(this.btnHome);
             this.Controls.Add(this.chartPriceEvolution);
             this.Controls.Add(this.dataGridViewDetails);
             this.Name = "DetailsForm";
@@ -143,8 +177,20 @@ namespace CryptoTracker.Views
             ((System.ComponentModel.ISupportInitialize)(this.dataGridViewDetails)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.chartPriceEvolution)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
         }
 
         #endregion
+
+        private void chartPriceEvolution_GetToolTipText(object sender, ToolTipEventArgs e)
+        {
+            if (e.HitTestResult.ChartElementType == ChartElementType.DataPoint)
+            {
+                var point = e.HitTestResult.Series.Points[e.HitTestResult.PointIndex];
+                e.Text = $"{point.YValues[0]:C2}";
+            }
+        }
+
+
     }
 }

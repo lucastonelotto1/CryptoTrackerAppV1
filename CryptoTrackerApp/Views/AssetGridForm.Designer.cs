@@ -32,8 +32,8 @@ namespace CryptoTrackerApp.Views
         /// </summary> .
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             dataGridView1 = new DataGridView();
             rank = new DataGridViewTextBoxColumn();
             symbol = new DataGridViewTextBoxColumn();
@@ -59,34 +59,34 @@ namespace CryptoTrackerApp.Views
             dataGridView1.AllowUserToResizeRows = false;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.BackgroundColor = Color.FromArgb(0, 18, 30);
-            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle3.BackColor = Color.FromArgb(1, 29, 43);
-            dataGridViewCellStyle3.Font = new System.Drawing.Font("Sans Serif Collection", 8F, FontStyle.Bold);
-            dataGridViewCellStyle3.ForeColor = Color.White;
-            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(1, 29, 43);
-            dataGridViewCellStyle3.SelectionForeColor = Color.White;
-            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridView1.BorderStyle = BorderStyle.None;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Sans Serif Collection", 8F, FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle1.SelectionForeColor = Color.White;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { rank, symbol, name, supply, maxSupply, marketCapUsd, volumeUsd24Hr, priceUsd, changePercent24Hr, vwap24Hr, explorer });
-            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle4.BackColor = Color.FromArgb(1, 26, 43);
-            dataGridViewCellStyle4.Font = new System.Drawing.Font("Sans Serif Collection", 6F);
-            dataGridViewCellStyle4.ForeColor = Color.FromArgb(56, 152, 213);
-            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(1, 26, 43);
-            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("Sans Serif Collection", 6F);
+            dataGridViewCellStyle2.ForeColor = Color.FromArgb(56, 152, 213);
+            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridView1.GridColor = Color.FromArgb(1, 26, 43);
-            dataGridView1.Location = new Point(26, 93);
-            dataGridView1.Margin = new Padding(3, 4, 3, 4);
+            dataGridView1.Location = new Point(23, 70);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.RowHeadersWidth = 51;
             dataGridView1.RowTemplate.Height = 35;
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridView1.Size = new Size(1194, 480);
+            dataGridView1.Size = new Size(1045, 360);
             dataGridView1.TabIndex = 0;
             dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
@@ -156,17 +156,14 @@ namespace CryptoTrackerApp.Views
             explorer.Name = "explorer";
             explorer.ReadOnly = true;
             // 
-
-            // 
             // AddFavorite
             // 
             AddFavorite.BackColor = Color.FromArgb(64, 228, 175);
             AddFavorite.Cursor = Cursors.Hand;
             AddFavorite.Font = new System.Drawing.Font("Segoe UI", 12F);
-            AddFavorite.Location = new Point(679, 581);
-            AddFavorite.Margin = new Padding(3, 4, 3, 4);
+            AddFavorite.Location = new Point(594, 436);
             AddFavorite.Name = "AddFavorite";
-            AddFavorite.Size = new Size(120, 57);
+            AddFavorite.Size = new Size(105, 43);
             AddFavorite.TabIndex = 1;
             AddFavorite.Text = "Add";
             AddFavorite.UseVisualStyleBackColor = false;
@@ -174,18 +171,16 @@ namespace CryptoTrackerApp.Views
             // 
             // searchTextBox
             // 
-            searchTextBox.Location = new Point(26, 37);
-            searchTextBox.Margin = new Padding(3, 4, 3, 4);
+            searchTextBox.Location = new Point(23, 28);
             searchTextBox.Name = "searchTextBox";
-            searchTextBox.Size = new Size(228, 27);
+            searchTextBox.Size = new Size(200, 23);
             searchTextBox.TabIndex = 2;
             // 
             // searchButton
             // 
-            searchButton.Location = new Point(262, 36);
-            searchButton.Margin = new Padding(3, 4, 3, 4);
+            searchButton.Location = new Point(229, 27);
             searchButton.Name = "searchButton";
-            searchButton.Size = new Size(86, 31);
+            searchButton.Size = new Size(75, 23);
             searchButton.TabIndex = 3;
             searchButton.Text = "Search";
             searchButton.UseVisualStyleBackColor = true;
@@ -196,10 +191,9 @@ namespace CryptoTrackerApp.Views
             btnHome.BackColor = Color.FromArgb(64, 228, 175);
             btnHome.Cursor = Cursors.Hand;
             btnHome.Font = new System.Drawing.Font("Segoe UI", 12F);
-            btnHome.Location = new Point(36, 581);
-            btnHome.Margin = new Padding(3, 4, 3, 4);
+            btnHome.Location = new Point(32, 436);
             btnHome.Name = "btnHome";
-            btnHome.Size = new Size(120, 57);
+            btnHome.Size = new Size(105, 43);
             btnHome.TabIndex = 4;
             btnHome.Text = "Home";
             btnHome.UseVisualStyleBackColor = false;
@@ -207,16 +201,15 @@ namespace CryptoTrackerApp.Views
             // 
             // AssetGridForm
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(0, 18, 30);
-            ClientSize = new Size(1254, 681);
+            ClientSize = new Size(1097, 511);
             Controls.Add(btnHome);
             Controls.Add(searchButton);
             Controls.Add(searchTextBox);
             Controls.Add(AddFavorite);
             Controls.Add(dataGridView1);
-            Margin = new Padding(3, 4, 3, 4);
             Name = "AssetGridForm";
             Text = "AssetGrid";
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();

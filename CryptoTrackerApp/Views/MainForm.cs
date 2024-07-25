@@ -121,6 +121,8 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCryptoAssets.Size = new Size(1068, 341);
             dataGridViewCryptoAssets.TabIndex = 4;
+            dataGridViewCryptoAssets.BorderStyle = 0; // Sin borde
+
             dataGridViewCryptoAssets.CellContentClick += dataGridViewCryptoAssets_CellContentClick;
             // 
             // dataGridViewTextBoxColumn1
