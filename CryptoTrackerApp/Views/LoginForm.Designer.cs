@@ -95,6 +95,7 @@ namespace CryptoTrackerApp
             // 
             btnLogin.BackColor = Color.FromArgb(64, 228, 175);
             btnLogin.Cursor = Cursors.Hand;
+            btnLogin.FlatAppearance.BorderSize = 0;
             btnLogin.Location = new Point(120, 236);
             btnLogin.Margin = new Padding(3, 2, 3, 2);
             btnLogin.Name = "btnLogin";

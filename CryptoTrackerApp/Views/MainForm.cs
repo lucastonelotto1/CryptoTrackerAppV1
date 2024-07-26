@@ -49,11 +49,12 @@ namespace CryptoTrackerApp
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private DataGridViewTextBoxColumn Id;
-        private string userId = "f3606c6c-072e-4e30-998a-051d73d4153f";
+        private string userId;
 
-        public MainForm()
+        public MainForm(string userId)
         {
             InitializeComponent();
+            this.userId = userId;
             apiClient = new CoinCapApiClient();
             LoadCryptoAssets();
             // Configura el cliente de Supabase
@@ -336,10 +337,10 @@ namespace CryptoTrackerApp
 
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            InitializeComponent();
-            AssetGridForm assetGridForm = new AssetGridForm();
-            assetGridForm.Show();
-            this.Hide();
+                AssetGridForm assetGridForm = new AssetGridForm(userId);
+                assetGridForm.Show();
+                this.Hide();
+
         }
 
 
@@ -364,7 +365,7 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["Symbol"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
+                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
 
                 try
                 {

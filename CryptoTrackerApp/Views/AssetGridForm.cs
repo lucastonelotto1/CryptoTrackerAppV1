@@ -22,10 +22,11 @@ namespace CryptoTrackerApp.Views
     {
         private CoinCapApiClient apiClient;
         private Supabase.Client supabaseClient;
-        private string userId = "f3606c6c-072e-4e30-998a-051d73d4153f";
-        public AssetGridForm()
+        private string userId;
+        public AssetGridForm(string userId)
         {
             InitializeComponent();
+            this.userId = userId;
             apiClient = new CoinCapApiClient();
             LoadDataAsync();
             // Configura el cliente de Supabase
@@ -228,7 +229,7 @@ namespace CryptoTrackerApp.Views
         private void btnHome_Click(object sender, EventArgs e)
         {
             InitializeComponent();
-            MainForm mainForm = new MainForm();
+            MainForm mainForm = new MainForm(userId);
             mainForm.Show();
             this.Hide();
         }
