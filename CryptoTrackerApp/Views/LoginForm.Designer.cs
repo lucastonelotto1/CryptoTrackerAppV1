@@ -42,7 +42,7 @@ namespace CryptoTrackerApp
             label1.AutoSize = true;
             label1.Font = new Font("Sans Serif Collection", 10.1999989F, FontStyle.Regular, GraphicsUnit.Point, 0);
             label1.ForeColor = Color.FromArgb(56, 152, 213);
-            label1.Location = new Point(107, 71);
+            label1.Location = new Point(120, 66);
             label1.Name = "label1";
             label1.Size = new Size(172, 35);
             label1.TabIndex = 0;
@@ -53,7 +53,7 @@ namespace CryptoTrackerApp
             // 
             lblUsername.AutoSize = true;
             lblUsername.ForeColor = Color.FromArgb(56, 152, 213);
-            lblUsername.Location = new Point(98, 129);
+            lblUsername.Location = new Point(86, 127);
             lblUsername.Name = "lblUsername";
             lblUsername.Size = new Size(60, 15);
             lblUsername.TabIndex = 1;
@@ -64,7 +64,7 @@ namespace CryptoTrackerApp
             // 
             lblPassword.AutoSize = true;
             lblPassword.ForeColor = Color.FromArgb(56, 152, 213);
-            lblPassword.Location = new Point(98, 173);
+            lblPassword.Location = new Point(86, 171);
             lblPassword.Name = "lblPassword";
             lblPassword.Size = new Size(57, 15);
             lblPassword.TabIndex = 2;
@@ -74,21 +74,21 @@ namespace CryptoTrackerApp
             // 
             txtUsername.BackColor = Color.FromArgb(0, 18, 30);
             txtUsername.ForeColor = Color.FromArgb(56, 152, 213);
-            txtUsername.Location = new Point(181, 129);
+            txtUsername.Location = new Point(169, 127);
             txtUsername.Margin = new Padding(3, 2, 3, 2);
             txtUsername.Name = "txtUsername";
-            txtUsername.Size = new Size(110, 23);
+            txtUsername.Size = new Size(142, 23);
             txtUsername.TabIndex = 4;
             // 
             // txtPassword
             // 
             txtPassword.BackColor = Color.FromArgb(0, 18, 30);
             txtPassword.ForeColor = Color.FromArgb(56, 152, 213);
-            txtPassword.Location = new Point(181, 173);
+            txtPassword.Location = new Point(169, 171);
             txtPassword.Margin = new Padding(3, 2, 3, 2);
             txtPassword.Name = "txtPassword";
             txtPassword.PasswordChar = '*';
-            txtPassword.Size = new Size(110, 23);
+            txtPassword.Size = new Size(142, 23);
             txtPassword.TabIndex = 5;
             // 
             // btnLogin
@@ -119,7 +119,7 @@ namespace CryptoTrackerApp
             Controls.Add(label1);
             Margin = new Padding(3, 2, 3, 2);
             Name = "LoginForm";
-            Text = "LoginForm";
+            Text = "Login";
             Load += LoginForm_Load;
             ResumeLayout(false);
             PerformLayout();

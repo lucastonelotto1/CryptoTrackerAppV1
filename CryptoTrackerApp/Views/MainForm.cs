@@ -31,6 +31,7 @@ using System.Collections.Generic;
 using CryptoTrackerApp;
 using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
+using Supabase.Gotrue;
 
 
 namespace CryptoTrackerApp
@@ -38,8 +39,10 @@ namespace CryptoTrackerApp
     public partial class MainForm : Form
     {
         private CoinCapApiClient apiClient;
+        private EmailService emailService;
         private Supabase.Client supabaseClient;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
+        private DataGridViewTextBoxColumn Position;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn4;
@@ -49,13 +52,21 @@ namespace CryptoTrackerApp
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private DataGridViewTextBoxColumn Id;
+        private Button btnLimits;
         private string userId;
+        private string email;
+        private string username;
+        private Session session;
 
-        public MainForm(string userId)
+        public MainForm(Session session)
         {
             InitializeComponent();
-            this.userId = userId;
+            userId = session.User.Id;
+            email = session.User.Email;
+            //username = session.User.UserMetadata["username"].ToString();
+            this.session = session;
             apiClient = new CoinCapApiClient();
+            emailService = new EmailService();
             LoadCryptoAssets();
             // Configura el cliente de Supabase
             string url = "https://cjulheqhpurkozgepnja.supabase.co";
@@ -71,6 +82,7 @@ namespace CryptoTrackerApp
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
             dataGridViewCryptoAssets = new DataGridView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
+            Position = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn3 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn4 = new DataGridViewTextBoxColumn();
@@ -83,7 +95,7 @@ namespace CryptoTrackerApp
             btnAddCrypto = new Button();
             btnViewDetails = new Button();
             btnRemoveCrypto = new Button();
-            
+            btnLimits = new Button();
             ((ISupportInitialize)dataGridViewCryptoAssets).BeginInit();
             SuspendLayout();
             // 
@@ -93,6 +105,7 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.AllowUserToResizeRows = false;
             dataGridViewCryptoAssets.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewCryptoAssets.BackgroundColor = Color.FromArgb(0, 18, 30);
+            dataGridViewCryptoAssets.BorderStyle = BorderStyle.None;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = Color.FromArgb(1, 29, 43);
             dataGridViewCellStyle1.Font = new Font("Sans Serif Collection", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -102,7 +115,7 @@ namespace CryptoTrackerApp
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             dataGridViewCryptoAssets.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewCryptoAssets.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9, Id });
+            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, Position, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9, Id });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
             dataGridViewCellStyle2.Font = new Font("Sans Serif Collection", 6F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -122,8 +135,6 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCryptoAssets.Size = new Size(1068, 341);
             dataGridViewCryptoAssets.TabIndex = 4;
-            dataGridViewCryptoAssets.BorderStyle = 0; // Sin borde
-
             dataGridViewCryptoAssets.CellContentClick += dataGridViewCryptoAssets_CellContentClick;
             // 
             // dataGridViewTextBoxColumn1
@@ -131,6 +142,13 @@ namespace CryptoTrackerApp
             dataGridViewTextBoxColumn1.HeaderText = "Ranking";
             dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             dataGridViewTextBoxColumn1.ReadOnly = true;
+            // 
+            // Position
+            // 
+            Position.HeaderText = "Position";
+            Position.Name = "Position";
+            Position.ReadOnly = true;
+            Position.Visible = false;
             // 
             // dataGridViewTextBoxColumn2
             // 
@@ -203,7 +221,7 @@ namespace CryptoTrackerApp
             // 
             btnViewDetails.BackColor = Color.FromArgb(64, 228, 175);
             btnViewDetails.Cursor = Cursors.Hand;
-            btnViewDetails.Location = new Point(552, 407);
+            btnViewDetails.Location = new Point(507, 407);
             btnViewDetails.Name = "btnViewDetails";
             btnViewDetails.Size = new Size(186, 44);
             btnViewDetails.TabIndex = 2;
@@ -222,17 +240,31 @@ namespace CryptoTrackerApp
             btnRemoveCrypto.Text = "Remove Crypto";
             btnRemoveCrypto.UseVisualStyleBackColor = false;
             btnRemoveCrypto.Click += btnRemoveCrypto_Click;
-
+            // 
+            // btnLimits
+            // 
+            btnLimits.BackColor = Color.FromArgb(64, 228, 175);
+            btnLimits.Cursor = Cursors.Hand;
+            btnLimits.FlatStyle = FlatStyle.Flat;
+            btnLimits.Location = new Point(1189, 42);
+            btnLimits.Name = "btnLimits";
+            btnLimits.Size = new Size(77, 29);
+            btnLimits.TabIndex = 5;
+            btnLimits.Text = "Boundaries";
+            btnLimits.UseVisualStyleBackColor = false;
+            btnLimits.Click += new System.EventHandler(btnLimits_Click);
             // 
             // MainForm
             // 
             BackColor = Color.FromArgb(0, 18, 30);
             ClientSize = new Size(1277, 473);
+            Controls.Add(btnLimits);
             Controls.Add(btnRemoveCrypto);
             Controls.Add(btnViewDetails);
             Controls.Add(btnAddCrypto);
             Controls.Add(dataGridViewCryptoAssets);
             Name = "MainForm";
+            Text = "Home";
             Load += MainForm_Load;
             ((ISupportInitialize)dataGridViewCryptoAssets).EndInit();
             ResumeLayout(false);
@@ -272,15 +304,14 @@ namespace CryptoTrackerApp
                     .Get();
 
                 var favoriteCryptos = response.Models;
-                
+
                 if (favoriteCryptos != null && favoriteCryptos.Any())
                 {
                     // Transform the results to only get the IdCrypto arrays
                     idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
 
                     // Show the JSON representation for debugging
-                    string favoriteJson = JsonConvert.SerializeObject(idCryptoArray);
-                    //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + json);
+                    string favoriteJsonRepresentation = JsonConvert.SerializeObject(idCryptoArray); // Renamed variable
                 }
                 else
                 {
@@ -293,16 +324,16 @@ namespace CryptoTrackerApp
             }
 
             // Comparar ambos arrays y obtener los IDs que estén en ambos arrays
-            List<string> FavoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
+            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
 
             // Mostrar el JSON de los IDs favoritos (para depuración)
-            string FavoriteJson = JsonConvert.SerializeObject(FavoriteIds);
-            //MessageBox.Show("Lista de IDs de criptomonedas favoritas: " + FavoriteJson);
+            string favoriteIdsJson = JsonConvert.SerializeObject(favoriteIds);
 
             // Agregar las criptomonedas favoritas al DataGridView
-            foreach (var asset in assets)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (FavoriteIds.Contains(asset.Symbol))
+                var asset = assets[i];
+                if (favoriteIds.Contains(asset.Symbol))
                 {
                     // Formatear los valores según sea necesario
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
@@ -312,8 +343,8 @@ namespace CryptoTrackerApp
                     string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
 
                     dataGridViewCryptoAssets.Rows.Add(
-                        
                         asset.Rank,
+                        i, // Agregar la posició
                         asset.Symbol,
                         asset.Name,
                         asset.Supply,
@@ -323,23 +354,19 @@ namespace CryptoTrackerApp
                         formattedChangePercent24Hr,
                         formattedVwap24Hr,
                         asset.Id
-                    //asset.Explorer
                     );
-                }
-                else
-                {
-                    //MessageBox.Show($"Cripto favorita, se agrega: {asset.Name}");
                 }
             }
         }
 
 
 
+
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-                AssetGridForm assetGridForm = new AssetGridForm(userId);
-                assetGridForm.Show();
-                this.Hide();
+            AssetGridForm assetGridForm = new AssetGridForm(session);
+            assetGridForm.Show();
+            this.Hide();
 
         }
 
@@ -351,7 +378,7 @@ namespace CryptoTrackerApp
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString(); // Asegúrate de que el nombre de la columna "Id" coincide
                 DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
-                detailsForm.ShowDialog();
+                detailsForm.Show();
             }
             else
             {
@@ -366,6 +393,7 @@ namespace CryptoTrackerApp
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
+                int selectedPosition = Convert.ToInt32(selectedRow.Cells["Position"].Value); // Asegúrate de que el nombre de la columna "Position" coincide
 
                 try
                 {
@@ -386,12 +414,18 @@ namespace CryptoTrackerApp
                     if (favoriteCryptos != null)
                     {
                         List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
-                        //MessageBox.Show(selectedCryptoId);
+                        List<int> umbralList = favoriteCryptos.Umbral.ToList();
+
                         if (idCryptoList.Contains(selectedCryptoId))
                         {
                             idCryptoList.Remove(selectedCryptoId);
-                            
+                            if (selectedPosition >= 0 && selectedPosition < umbralList.Count)
+                            {
+                                umbralList.RemoveAt(selectedPosition); // Eliminar la posición de la lista de umbral
+                            }
+
                             favoriteCryptos.IdCrypto = idCryptoList.ToArray();
+                            favoriteCryptos.Umbral = umbralList.ToArray();
 
                             var updateResponse = await supabaseClient
                                 .From<FavoriteCryptos>()
@@ -399,7 +433,6 @@ namespace CryptoTrackerApp
 
                             if (updateResponse != null)
                             {
-                                //MessageBox.Show("Crypto removed from favorites successfully.");
                                 // Limpia el DataGridView antes de recargar los datos
                                 dataGridViewCryptoAssets.Rows.Clear();
                                 LoadCryptoAssets();
@@ -432,6 +465,7 @@ namespace CryptoTrackerApp
 
 
 
+
         private void MainForm_Load(object sender, EventArgs e)
         {
 
@@ -441,6 +475,19 @@ namespace CryptoTrackerApp
         {
 
         }
+
+        private async void btnLimits_Click(object sender, EventArgs e)
+        {
+            string toEmail = email; // Correo del destinatario
+            string toName = "Client"; // Nombre del destinatario
+            string plainTextContent = "Este es el contenido del correo en texto plano.";
+            string htmlContent = "<h1>Este es el contenido del correo en HTML.</h1>";
+
+            await emailService.SendEmailAsync(toEmail, toName, plainTextContent, htmlContent);
+            MessageBox.Show("Correo de límites enviado.");
+
+        }
+
     }
 
 

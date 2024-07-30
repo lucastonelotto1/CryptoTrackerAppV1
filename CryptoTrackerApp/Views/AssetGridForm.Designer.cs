@@ -32,8 +32,8 @@ namespace CryptoTrackerApp.Views
         /// </summary> .
         private void InitializeComponent()
         {
-            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             dataGridView1 = new DataGridView();
             rank = new DataGridViewTextBoxColumn();
             symbol = new DataGridViewTextBoxColumn();
@@ -60,24 +60,24 @@ namespace CryptoTrackerApp.Views
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridView1.BackgroundColor = Color.FromArgb(0, 18, 30);
             dataGridView1.BorderStyle = BorderStyle.None;
-            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle1.BackColor = Color.FromArgb(1, 29, 43);
-            dataGridViewCellStyle1.Font = new System.Drawing.Font("Sans Serif Collection", 8F, FontStyle.Bold);
-            dataGridViewCellStyle1.ForeColor = Color.White;
-            dataGridViewCellStyle1.SelectionBackColor = Color.FromArgb(1, 29, 43);
-            dataGridViewCellStyle1.SelectionForeColor = Color.White;
-            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
-            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Sans Serif Collection", 8F, FontStyle.Bold);
+            dataGridViewCellStyle3.ForeColor = Color.White;
+            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle3.SelectionForeColor = Color.White;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridView1.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             dataGridView1.Columns.AddRange(new DataGridViewColumn[] { rank, symbol, name, supply, maxSupply, marketCapUsd, volumeUsd24Hr, priceUsd, changePercent24Hr, vwap24Hr, explorer });
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
-            dataGridViewCellStyle2.Font = new System.Drawing.Font("Sans Serif Collection", 6F);
-            dataGridViewCellStyle2.ForeColor = Color.FromArgb(56, 152, 213);
-            dataGridViewCellStyle2.SelectionBackColor = Color.FromArgb(1, 26, 43);
-            dataGridViewCellStyle2.SelectionForeColor = SystemColors.HighlightText;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("Sans Serif Collection", 6F);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(56, 152, 213);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle4;
             dataGridView1.GridColor = Color.FromArgb(1, 26, 43);
             dataGridView1.Location = new Point(23, 70);
             dataGridView1.Name = "dataGridView1";
@@ -211,7 +211,8 @@ namespace CryptoTrackerApp.Views
             Controls.Add(AddFavorite);
             Controls.Add(dataGridView1);
             Name = "AssetGridForm";
-            Text = "AssetGrid";
+            Text = "Add Crypto";
+            Load += AssetGridForm_Load_1;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
             PerformLayout();

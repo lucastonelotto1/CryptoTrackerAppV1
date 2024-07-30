@@ -15,6 +15,9 @@ namespace CryptoTrackerApp.Classes
 
         [Column("IdCrypto")]
         public string[] IdCrypto { get; set; }
+
+        [Column("Umbral")]
+        public int[] Umbral { get; set; }
     }
 
 

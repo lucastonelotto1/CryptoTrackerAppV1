@@ -14,6 +14,7 @@ using Supabase;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 using CryptoTrackerApp;
+using Supabase.Gotrue;
 
 namespace CryptoTrackerApp.Views
 {
@@ -23,10 +24,11 @@ namespace CryptoTrackerApp.Views
         private CoinCapApiClient apiClient;
         private Supabase.Client supabaseClient;
         private string userId;
-        public AssetGridForm(string userId)
+        private Session session;
+        public AssetGridForm(Session session)
         {
             InitializeComponent();
-            this.userId = userId;
+            userId = session.User.Id;
             apiClient = new CoinCapApiClient();
             LoadDataAsync();
             // Configura el cliente de Supabase
@@ -70,7 +72,7 @@ namespace CryptoTrackerApp.Views
                 {
                     idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
                     string favoriteJson = JsonConvert.SerializeObject(idCryptoArray);
-                     //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + favoriteJson);
+                    //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + favoriteJson);
                 }
                 else
                 {
@@ -116,7 +118,7 @@ namespace CryptoTrackerApp.Views
             if (dataGridView1.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridView1.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["symbol"].Value.ToString().ToUpper(); // Asegúrate de que el nombre de la columna "ID" coincide
+                string selectedCryptoId = selectedRow.Cells["symbol"].Value.ToString().ToUpper(); // Asegúrate de que el nombre de la columna "symbol" coincide
 
                 try
                 {
@@ -137,12 +139,15 @@ namespace CryptoTrackerApp.Views
                     if (favoriteCryptos != null)
                     {
                         List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
+                        List<int> umbralList = favoriteCryptos.Umbral.ToList();
 
                         if (!idCryptoList.Contains(selectedCryptoId))
                         {
                             idCryptoList.Add(selectedCryptoId);
+                            umbralList.Add(15); // Añade el valor 15 a la lista Umbral
 
                             favoriteCryptos.IdCrypto = idCryptoList.ToArray();
+                            favoriteCryptos.Umbral = umbralList.ToArray(); // Actualiza la lista Umbral
 
                             var updateResponse = await supabaseClient
                                 .From<FavoriteCryptos>()
@@ -157,7 +162,6 @@ namespace CryptoTrackerApp.Views
 
                                 // Recarga los datos
                                 LoadDataAsync();
-
                             }
                             else
                             {
@@ -184,6 +188,7 @@ namespace CryptoTrackerApp.Views
                 MessageBox.Show("Please select a crypto asset to add it to favorites.");
             }
         }
+
 
         private void searchButton_Click(object sender, EventArgs e)
         {
@@ -229,9 +234,14 @@ namespace CryptoTrackerApp.Views
         private void btnHome_Click(object sender, EventArgs e)
         {
             InitializeComponent();
-            MainForm mainForm = new MainForm(userId);
+            MainForm mainForm = new MainForm(session);
             mainForm.Show();
             this.Hide();
+        }
+
+        private void AssetGridForm_Load_1(object sender, EventArgs e)
+        {
+
         }
 
 
