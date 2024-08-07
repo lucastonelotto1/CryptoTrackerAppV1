@@ -88,7 +88,6 @@ namespace CryptoTrackerApp.Views
             dataGridView1.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridView1.Size = new Size(1045, 360);
             dataGridView1.TabIndex = 0;
-            dataGridView1.CellContentClick += dataGridView1_CellContentClick;
             // 
             // rank
             // 
@@ -212,7 +211,6 @@ namespace CryptoTrackerApp.Views
             Controls.Add(dataGridView1);
             Name = "AssetGridForm";
             Text = "Add Crypto";
-            Load += AssetGridForm_Load_1;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ResumeLayout(false);
             PerformLayout();

@@ -10,15 +10,19 @@ namespace CryptoTrackerApp.Classes
 {
     public class FavoriteCryptos : BaseModel
     {
-        [PrimaryKey("IdUser", false)]
-        public Guid IdUser { get; set; }
+        [PrimaryKey("FavoriteId")]
+        public int Id { get; set; }
 
-        [Column("IdCrypto")]
-        public string[] IdCrypto { get; set; }
+        [Column("UserId")]
+        public Guid UserId { get; set; }
 
-        [Column("Umbral")]
-        public float[] Umbral { get; set; }
+        [Column("CryptoId")]
+        public string CryptoId { get; set; }
+
+        [Column("Limit")]
+        public float Limit { get; set; }
     }
+
 
 
 }
