@@ -53,7 +53,7 @@ namespace CryptoTrackerApp.Views
                     .Single();
 
                 var actualLimit = response.Limit.ToString();
-                
+
                 textBox1.Text = actualLimit;
                 return;
             }// Asumiendo que "Limit" es el nombre del campo en la tabla
@@ -65,7 +65,7 @@ namespace CryptoTrackerApp.Views
 
         private async void btnUpdateLimits_Click(object sender, EventArgs e)
         {
-            string newLimit = textBox1.Text;
+            float newLimit = float.Parse(textBox1.Text);
             try
             {
                 await UpdateLimit(newLimit);
@@ -77,7 +77,7 @@ namespace CryptoTrackerApp.Views
             }
         }
 
-        private async Task UpdateLimit(string newLimit)
+        private async Task UpdateLimit(float newLimit)
         {
             var updates = new { Limit = newLimit };
             Guid userIdGuid;
@@ -90,9 +90,14 @@ namespace CryptoTrackerApp.Views
             var response = await supabaseClient
                 .From<FavoriteCryptos>()
                 .Where(x => x.UserId == userIdGuid && x.CryptoId == CryptoId)
-                .Select("Limit")
+                .Set(x => x.Limit, newLimit)
                 .Update();
 
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            this.Close();
         }
     }
 }
