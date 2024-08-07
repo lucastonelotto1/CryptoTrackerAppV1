@@ -25,9 +25,12 @@ namespace CryptoTrackerApp.Views
         private Supabase.Client supabaseClient;
         private string userId;
         private Session session;
-        public AssetGridForm(Session session)
+        private MainForm mainForm;
+
+        public AssetGridForm(Session session, MainForm mainForm)
         {
             InitializeComponent();
+            this.mainForm = mainForm; // Asigna la instancia del MainForm pasada como argumento
             userId = session.User.Id;
             apiClient = new CoinCapApiClient();
             LoadDataAsync();
@@ -139,7 +142,7 @@ namespace CryptoTrackerApp.Views
                     if (favoriteCryptos != null)
                     {
                         List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
-                        List<int> umbralList = favoriteCryptos.Umbral.ToList();
+                        List<float> umbralList = favoriteCryptos.Umbral.ToList();
 
                         if (!idCryptoList.Contains(selectedCryptoId))
                         {
@@ -234,9 +237,9 @@ namespace CryptoTrackerApp.Views
         private void btnHome_Click(object sender, EventArgs e)
         {
             InitializeComponent();
-            MainForm mainForm = new MainForm(session);
-            mainForm.Show();
             this.Hide();
+            mainForm.LoadCryptoAssets();
+            mainForm.Show();
         }
 
         private void AssetGridForm_Load_1(object sender, EventArgs e)

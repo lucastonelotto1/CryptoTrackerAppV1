@@ -63,20 +63,17 @@ namespace CryptoTrackerApp
             InitializeComponent();
             userId = session.User.Id;
             email = session.User.Email;
-            //username = session.User.UserMetadata["username"].ToString();
             this.session = session;
             apiClient = new CoinCapApiClient();
             emailService = new EmailService();
             LoadCryptoAssets();
-            // Configura el cliente de Supabase
             string url = "https://cjulheqhpurkozgepnja.supabase.co";
             string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
             supabaseClient = new Supabase.Client(url, key);
             supabaseClient.InitializeAsync().Wait();
-
         }
 
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
@@ -277,7 +274,7 @@ namespace CryptoTrackerApp
 
 
 
-        private async void LoadCryptoAssets()
+        public async void LoadCryptoAssets()
         {
             List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
             List<string> cryptoIds = new List<string>();
@@ -287,7 +284,6 @@ namespace CryptoTrackerApp
                 cryptoIds.Add(asset.Symbol);
             }
 
-            string json = JsonConvert.SerializeObject(cryptoIds);
             string[] idCryptoArray = new string[0];
             try
             {
@@ -307,11 +303,7 @@ namespace CryptoTrackerApp
 
                 if (favoriteCryptos != null && favoriteCryptos.Any())
                 {
-                    // Transform the results to only get the IdCrypto arrays
                     idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
-
-                    // Show the JSON representation for debugging
-                    string favoriteJsonRepresentation = JsonConvert.SerializeObject(idCryptoArray); // Renamed variable
                 }
                 else
                 {
@@ -323,28 +315,25 @@ namespace CryptoTrackerApp
                 MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
             }
 
-            // Comparar ambos arrays y obtener los IDs que estén en ambos arrays
             List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
 
-            // Mostrar el JSON de los IDs favoritos (para depuración)
-            string favoriteIdsJson = JsonConvert.SerializeObject(favoriteIds);
-
-            // Agregar las criptomonedas favoritas al DataGridView
             for (int i = 0; i < assets.Count; i++)
             {
                 var asset = assets[i];
                 if (favoriteIds.Contains(asset.Symbol))
                 {
-                    // Formatear los valores según sea necesario
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
                     string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
                     string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
                     string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
                     string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
 
+                    // Obtener la posición basada en el array idCryptoArray
+                    int position = Array.IndexOf(idCryptoArray, asset.Symbol);
+
                     dataGridViewCryptoAssets.Rows.Add(
                         asset.Rank,
-                        i, // Agregar la posició
+                        position, // Asigna la posición basada en el array idCryptoArray
                         asset.Symbol,
                         asset.Name,
                         asset.Supply,
@@ -364,19 +353,18 @@ namespace CryptoTrackerApp
 
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            AssetGridForm assetGridForm = new AssetGridForm(session);
+            AssetGridForm assetGridForm = new AssetGridForm(session, this);
             assetGridForm.Show();
             this.Hide();
 
         }
-
 
         private void btnViewDetails_Click(object sender, EventArgs e)
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString(); // Asegúrate de que el nombre de la columna "Id" coincide
+                string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString();
                 DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
                 detailsForm.Show();
             }
@@ -392,8 +380,8 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
-                int selectedPosition = Convert.ToInt32(selectedRow.Cells["Position"].Value); // Asegúrate de que el nombre de la columna "Position" coincide
+                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString(); // Cambiar el nombre de la columna según tu DataGridView
+                int selectedPosition = Convert.ToInt32(selectedRow.Cells["Position"].Value);
 
                 try
                 {
@@ -414,14 +402,14 @@ namespace CryptoTrackerApp
                     if (favoriteCryptos != null)
                     {
                         List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
-                        List<int> umbralList = favoriteCryptos.Umbral.ToList();
+                        List<float> umbralList = favoriteCryptos.Umbral.ToList();
 
                         if (idCryptoList.Contains(selectedCryptoId))
                         {
                             idCryptoList.Remove(selectedCryptoId);
                             if (selectedPosition >= 0 && selectedPosition < umbralList.Count)
                             {
-                                umbralList.RemoveAt(selectedPosition); // Eliminar la posición de la lista de umbral
+                                umbralList.RemoveAt(selectedPosition);
                             }
 
                             favoriteCryptos.IdCrypto = idCryptoList.ToArray();
@@ -433,7 +421,6 @@ namespace CryptoTrackerApp
 
                             if (updateResponse != null)
                             {
-                                // Limpia el DataGridView antes de recargar los datos
                                 dataGridViewCryptoAssets.Rows.Clear();
                                 LoadCryptoAssets();
                             }
@@ -468,7 +455,6 @@ namespace CryptoTrackerApp
 
         private void MainForm_Load(object sender, EventArgs e)
         {
-
         }
 
         private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e)
@@ -476,20 +462,21 @@ namespace CryptoTrackerApp
 
         }
 
-        private async void btnLimits_Click(object sender, EventArgs e)
+        private void btnLimits_Click(object sender, EventArgs e)
         {
-            string toEmail = email; // Correo del destinatario
-            string toName = "Client"; // Nombre del destinatario
-            string plainTextContent = "Este es el contenido del correo en texto plano.";
-            string htmlContent = "<h1>Este es el contenido del correo en HTML.</h1>";
-
-            await emailService.SendEmailAsync(toEmail, toName, plainTextContent, htmlContent);
-            MessageBox.Show("Correo de límites enviado.");
-
+            if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
+            {
+                var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
+                string selectedCryptoPosition = selectedRow.Cells["Position"].Value.ToString();
+                LimitsForm changeLimitsForm = new LimitsForm(selectedCryptoPosition);
+                changeLimitsForm.Show();
+            }
+            else
+            {
+                MessageBox.Show("Please select a crypto asset to view details.");
+            }
         }
-
     }
-
-
 }
+
 
