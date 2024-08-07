@@ -341,8 +341,15 @@ namespace CryptoTrackerApp
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
             AssetGridForm assetGridForm = new AssetGridForm(session, this);
+            assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();
+        }
+
+        private void AssetGridForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.Show();
+            UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
         }
 
         private void btnViewDetails_Click(object sender, EventArgs e)
@@ -350,9 +357,16 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString();
-                DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
-                detailsForm.Show();
+                if (selectedRow.Cells["Id"].Value != null) // Verifica que la celda no sea nula
+                {
+                    string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString();
+                    DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
+                    detailsForm.Show();
+                }
+                else
+                {
+                    MessageBox.Show("The selected crypto asset does not have an ID.");
+                }
             }
             else
             {
@@ -366,7 +380,6 @@ namespace CryptoTrackerApp
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
-                int selectedPosition = Convert.ToInt32(selectedRow.Cells["Position"].Value);
 
                 try
                 {
@@ -377,27 +390,30 @@ namespace CryptoTrackerApp
                         return;
                     }
 
+                    // Buscar el registro en la base de datos Supabase
                     var response = await supabaseClient
                         .From<FavoriteCryptos>()
-                        .Where(x => x.UserId == userIdGuid)
+                        .Where(x => x.UserId == userIdGuid && x.CryptoId == selectedCryptoId)
                         .Get();
 
-                    var favoriteCrypto = response.Models.FirstOrDefault(x => x.CryptoId == selectedCryptoId);
+                    var favoriteCrypto = response.Models.FirstOrDefault();
 
                     if (favoriteCrypto != null)
                     {
+                        // Eliminar el registro de la base de datos Supabase
                         var deleteResponse = await supabaseClient
                             .From<FavoriteCryptos>()
                             .Delete(favoriteCrypto);
 
                         if (deleteResponse != null)
                         {
+                            // Actualizar el DataGridView después de eliminar el registro
                             dataGridViewCryptoAssets.Rows.Clear();
                             LoadCryptoAssets();
                         }
                         else
                         {
-                            MessageBox.Show("Failed to update favorite cryptos.");
+                            MessageBox.Show("Failed to remove the crypto from favorites.");
                         }
                     }
                     else
@@ -425,13 +441,87 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoPosition = selectedRow.Cells["Position"].Value.ToString();
-                LimitsForm changeLimitsForm = new LimitsForm(selectedCryptoPosition);
+                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
+                LimitsForm changeLimitsForm = new LimitsForm(session, selectedCryptoId);
                 changeLimitsForm.Show();
             }
             else
             {
-                MessageBox.Show("Please select a crypto asset to view details.");
+                MessageBox.Show("Please select a crypto asset to update limits.");
+            }
+        }
+
+
+        public async void UpdateFavoriteCryptos()
+        {
+            List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
+            List<string> cryptoIds = new List<string>();
+
+            foreach (var asset in assets)
+            {
+                cryptoIds.Add(asset.Symbol);
+            }
+
+            string[] idCryptoArray = new string[0];
+            try
+            {
+                Guid userIdGuid;
+                if (!Guid.TryParse(userId, out userIdGuid))
+                {
+                    MessageBox.Show("Invalid user ID format.");
+                    return;
+                }
+
+                var response = await supabaseClient
+                    .From<FavoriteCryptos>()
+                    .Where(x => x.UserId == userIdGuid)
+                    .Get();
+
+                var favoriteCryptos = response.Models;
+
+                if (favoriteCryptos != null && favoriteCryptos.Any())
+                {
+                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
+                }
+                else
+                {
+                    MessageBox.Show("No favorite cryptos found for this user.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                return;
+            }
+
+            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
+            dataGridViewCryptoAssets.Rows.Clear();
+            for (int i = 0; i < assets.Count; i++)
+            {
+                var asset = assets[i];
+                if (favoriteIds.Contains(asset.Symbol))
+                {
+                    string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
+                    string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
+                    string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
+                    string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
+                    string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
+
+
+                    dataGridViewCryptoAssets.Rows.Add(
+                        asset.Rank,
+                        asset.Symbol,
+                        asset.Name,
+                        asset.Supply,
+                        formattedMarketCapUsd,
+                        formattedVolumeUsd24Hr,
+                        formattedPriceUsd,
+                        formattedChangePercent24Hr,
+                        formattedVwap24Hr,
+                        asset.Id
+                    );
+                }
             }
         }
     }

@@ -100,7 +100,72 @@ namespace CryptoTrackerApp.Views
 
         private async void btnAddCrypto_Click(object sender, EventArgs e)
         {
-           
+            // Verifica que haya una fila seleccionada en el DataGridView
+            if (dataGridView1.SelectedRows.Count > 0)
+            {
+                // Obtén la fila seleccionada
+                var selectedRow = dataGridView1.SelectedRows[0];
+                // Obtén el ID de la criptomoneda seleccionada (columna "Symbol")
+                string selectedCryptoId = selectedRow.Cells["symbol"].Value.ToString().ToUpper();
+
+                try
+                {
+                    // Verifica si el userId es un GUID válido
+                    if (!Guid.TryParse(userId, out Guid userIdGuid))
+                    {
+                        MessageBox.Show("Invalid user ID format.");
+                        return;
+                    }
+
+                    // Busca si el usuario ya tiene criptomonedas favoritas en la base de datos
+                    var response = await supabaseClient
+                        .From<FavoriteCryptos>()
+                        .Where(x => x.UserId == userIdGuid)
+                        .Get();
+
+                    var favoriteCryptos = response.Models;
+
+                    // Verifica si la criptomoneda seleccionada ya está en los favoritos del usuario
+                    if (favoriteCryptos != null && favoriteCryptos.Any(fc => fc.CryptoId == selectedCryptoId))
+                    {
+                        MessageBox.Show("Selected crypto is already in favorites.");
+                        return;
+                    }
+
+                    // Crea una nueva entrada para la criptomoneda favorita
+                    var newFavorite = new FavoriteCryptos
+                    {
+                        UserId = userIdGuid,
+                        CryptoId = selectedCryptoId,
+                        Limit = 15 // Valor por defecto
+                    };
+
+                    // Inserta la nueva entrada en la base de datos
+                    var insertResponse = await supabaseClient
+                        .From<FavoriteCryptos>()
+                        .Insert(newFavorite);
+
+                    if (insertResponse.Models.Any())
+                    {
+                        MessageBox.Show("Crypto added to favorites successfully.");
+                        // Refresca los datos del DataGridView para reflejar el cambio
+                        dataGridView1.Rows.Clear();
+                        LoadDataAsync();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Failed to add crypto to favorites.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred while adding the crypto: " + ex.Message);
+                }
+            }
+            else
+            {
+                MessageBox.Show("Please select a crypto asset to add it to favorites.");
+            }
         }
 
         private void searchButton_Click(object sender, EventArgs e)
@@ -129,8 +194,8 @@ namespace CryptoTrackerApp.Views
 
         private void btnHome_Click(object sender, EventArgs e)
         {
-            InitializeComponent();
             this.Hide();
+            mainForm.UpdateFavoriteCryptos();
             mainForm.Show();
         }
     }
