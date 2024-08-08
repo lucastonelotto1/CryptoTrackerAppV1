@@ -44,8 +44,7 @@ namespace CryptoTrackerApp
                     // Almacenar el token en las propiedades de configuración
                     //Properties.Settings.Default.JWTToken = session.AccessToken;
                     //Properties.Settings.Default.Save();
-
-                    MainForm mainForm = new MainForm();
+                    MainForm mainForm = new MainForm(session);
                     mainForm.Show();
                     this.Hide();
                 }

@@ -30,6 +30,8 @@ using System.Linq;
 using System.Collections.Generic;
 using CryptoTrackerApp;
 using CryptoTrackerApp.Views;
+using CryptoTracker.Views;
+using Supabase.Gotrue;
 
 
 namespace CryptoTrackerApp
@@ -37,6 +39,7 @@ namespace CryptoTrackerApp
     public partial class MainForm : Form
     {
         private CoinCapApiClient apiClient;
+        private EmailService emailService;
         private Supabase.Client supabaseClient;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
@@ -47,22 +50,28 @@ namespace CryptoTrackerApp
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn7;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn8;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
-        private string userId = "f3606c6c-072e-4e30-998a-051d73d4153f";
+        private DataGridViewTextBoxColumn Id;
+        private Button btnLimits;
+        private string userId;
+        private string email;
+        private Session session;
 
-        public MainForm()
+        public MainForm(Session session)
         {
             InitializeComponent();
+            userId = session.User.Id;
+            email = session.User.Email;
+            this.session = session;
             apiClient = new CoinCapApiClient();
+            emailService = new EmailService();
             LoadCryptoAssets();
-            // Configura el cliente de Supabase
             string url = "https://cjulheqhpurkozgepnja.supabase.co";
             string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
             supabaseClient = new Supabase.Client(url, key);
             supabaseClient.InitializeAsync().Wait();
-
         }
 
-        private void InitializeComponent()
+        public void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
@@ -76,9 +85,11 @@ namespace CryptoTrackerApp
             dataGridViewTextBoxColumn7 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn8 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn9 = new DataGridViewTextBoxColumn();
+            Id = new DataGridViewTextBoxColumn();
             btnAddCrypto = new Button();
             btnViewDetails = new Button();
             btnRemoveCrypto = new Button();
+            btnLimits = new Button();
             ((ISupportInitialize)dataGridViewCryptoAssets).BeginInit();
             SuspendLayout();
             // 
@@ -88,6 +99,7 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.AllowUserToResizeRows = false;
             dataGridViewCryptoAssets.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dataGridViewCryptoAssets.BackgroundColor = Color.FromArgb(0, 18, 30);
+            dataGridViewCryptoAssets.BorderStyle = BorderStyle.None;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = Color.FromArgb(1, 29, 43);
             dataGridViewCellStyle1.Font = new Font("Sans Serif Collection", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
@@ -97,7 +109,7 @@ namespace CryptoTrackerApp
             dataGridViewCellStyle1.WrapMode = DataGridViewTriState.True;
             dataGridViewCryptoAssets.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             dataGridViewCryptoAssets.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9 });
+            dataGridViewCryptoAssets.Columns.AddRange(new DataGridViewColumn[] { dataGridViewTextBoxColumn1, dataGridViewTextBoxColumn2, dataGridViewTextBoxColumn3, dataGridViewTextBoxColumn4, dataGridViewTextBoxColumn5, dataGridViewTextBoxColumn6, dataGridViewTextBoxColumn7, dataGridViewTextBoxColumn8, dataGridViewTextBoxColumn9, Id });
             dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle2.BackColor = Color.FromArgb(1, 26, 43);
             dataGridViewCellStyle2.Font = new Font("Sans Serif Collection", 6F, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -122,56 +134,64 @@ namespace CryptoTrackerApp
             // dataGridViewTextBoxColumn1
             // 
             dataGridViewTextBoxColumn1.HeaderText = "Ranking";
-            dataGridViewTextBoxColumn1.Name = "Ranking";
+            dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             dataGridViewTextBoxColumn1.ReadOnly = true;
+
             // 
             // dataGridViewTextBoxColumn2
             // 
             dataGridViewTextBoxColumn2.HeaderText = "Symbol";
-            dataGridViewTextBoxColumn2.Name = "Symbol";
+            dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn3
             // 
             dataGridViewTextBoxColumn3.HeaderText = "Name";
-            dataGridViewTextBoxColumn3.Name = "Name";
+            dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
             dataGridViewTextBoxColumn3.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn4
             // 
             dataGridViewTextBoxColumn4.HeaderText = "Supply";
-            dataGridViewTextBoxColumn4.Name = "Supply";
+            dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn5
             // 
             dataGridViewTextBoxColumn5.HeaderText = "Market Cap USD";
-            dataGridViewTextBoxColumn5.Name = "Market Cap USD";
+            dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             dataGridViewTextBoxColumn5.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn6
             // 
             dataGridViewTextBoxColumn6.HeaderText = "Volume USD";
-            dataGridViewTextBoxColumn6.Name = "Volume USD";
+            dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
             dataGridViewTextBoxColumn6.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn7
             // 
             dataGridViewTextBoxColumn7.HeaderText = "Price USD";
-            dataGridViewTextBoxColumn7.Name = "Price USD";
+            dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             dataGridViewTextBoxColumn7.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn8
             // 
             dataGridViewTextBoxColumn8.HeaderText = "Change";
-            dataGridViewTextBoxColumn8.Name = "Change";
+            dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
             dataGridViewTextBoxColumn8.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn9
             // 
             dataGridViewTextBoxColumn9.HeaderText = "VWAP";
-            dataGridViewTextBoxColumn9.Name = "VWAP";
+            dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
             dataGridViewTextBoxColumn9.ReadOnly = true;
+            // 
+            // Id
+            // 
+            Id.HeaderText = "Id";
+            Id.Name = "Id";
+            Id.ReadOnly = true;
+            Id.Visible = false;
             // 
             // btnAddCrypto
             // 
@@ -189,7 +209,7 @@ namespace CryptoTrackerApp
             // 
             btnViewDetails.BackColor = Color.FromArgb(64, 228, 175);
             btnViewDetails.Cursor = Cursors.Hand;
-            btnViewDetails.Location = new Point(552, 407);
+            btnViewDetails.Location = new Point(507, 407);
             btnViewDetails.Name = "btnViewDetails";
             btnViewDetails.Size = new Size(186, 44);
             btnViewDetails.TabIndex = 2;
@@ -209,15 +229,30 @@ namespace CryptoTrackerApp
             btnRemoveCrypto.UseVisualStyleBackColor = false;
             btnRemoveCrypto.Click += btnRemoveCrypto_Click;
             // 
+            // btnLimits
+            // 
+            btnLimits.BackColor = Color.FromArgb(64, 228, 175);
+            btnLimits.Cursor = Cursors.Hand;
+            btnLimits.FlatStyle = FlatStyle.Flat;
+            btnLimits.Location = new Point(1189, 42);
+            btnLimits.Name = "btnLimits";
+            btnLimits.Size = new Size(77, 29);
+            btnLimits.TabIndex = 5;
+            btnLimits.Text = "Boundaries";
+            btnLimits.UseVisualStyleBackColor = false;
+            btnLimits.Click += new System.EventHandler(btnLimits_Click);
+            // 
             // MainForm
             // 
             BackColor = Color.FromArgb(0, 18, 30);
             ClientSize = new Size(1277, 473);
+            Controls.Add(btnLimits);
             Controls.Add(btnRemoveCrypto);
             Controls.Add(btnViewDetails);
             Controls.Add(btnAddCrypto);
             Controls.Add(dataGridViewCryptoAssets);
             Name = "MainForm";
+            Text = "Home";
             Load += MainForm_Load;
             ((ISupportInitialize)dataGridViewCryptoAssets).EndInit();
             ResumeLayout(false);
@@ -240,7 +275,6 @@ namespace CryptoTrackerApp
                 cryptoIds.Add(asset.Symbol);
             }
 
-            string json = JsonConvert.SerializeObject(cryptoIds);
             string[] idCryptoArray = new string[0];
             try
             {
@@ -253,48 +287,40 @@ namespace CryptoTrackerApp
 
                 var response = await supabaseClient
                     .From<FavoriteCryptos>()
-                    .Where(x => x.IdUser == userIdGuid)
+                    .Where(x => x.UserId == userIdGuid)
                     .Get();
 
                 var favoriteCryptos = response.Models;
-                
+
                 if (favoriteCryptos != null && favoriteCryptos.Any())
                 {
-                    // Transform the results to only get the IdCrypto arrays
-                    idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
-
-                    // Show the JSON representation for debugging
-                    string favoriteJson = JsonConvert.SerializeObject(idCryptoArray);
-                    //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + json);
+                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
                 }
                 else
                 {
                     MessageBox.Show("No favorite cryptos found for this user.");
+                    return;
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                return;
             }
 
-            // Comparar ambos arrays y obtener los IDs que estén en ambos arrays
-            List<string> FavoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
+            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
 
-            // Mostrar el JSON de los IDs favoritos (para depuración)
-            string FavoriteJson = JsonConvert.SerializeObject(FavoriteIds);
-            //MessageBox.Show("Lista de IDs de criptomonedas favoritas: " + FavoriteJson);
-
-            // Agregar las criptomonedas favoritas al DataGridView
-            foreach (var asset in assets)
+            for (int i = 0; i < assets.Count; i++)
             {
-                if (FavoriteIds.Contains(asset.Symbol))
+                var asset = assets[i];
+                if (favoriteIds.Contains(asset.Symbol))
                 {
-                    // Formatear los valores según sea necesario
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
                     string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
                     string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
                     string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
                     string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
+
 
                     dataGridViewCryptoAssets.Rows.Add(
                         asset.Rank,
@@ -305,35 +331,42 @@ namespace CryptoTrackerApp
                         formattedVolumeUsd24Hr,
                         formattedPriceUsd,
                         formattedChangePercent24Hr,
-                        formattedVwap24Hr
-                    //asset.Explorer
+                        formattedVwap24Hr,
+                        asset.Id
                     );
-                }
-                else
-                {
-                    //MessageBox.Show($"Cripto favorita, se agrega: {asset.Name}");
                 }
             }
         }
 
-
-
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            InitializeComponent();
-            AssetGridForm assetGridForm = new AssetGridForm();
+            AssetGridForm assetGridForm = new AssetGridForm(session, this);
+            assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();
         }
 
+        private void AssetGridForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            this.Show();
+            UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
+        }
 
         private void btnViewDetails_Click(object sender, EventArgs e)
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
-                var selectedAsset = dataGridViewCryptoAssets.SelectedRows[0].DataBoundItem as CryptoAsset;
-                // var detailsForm = new DetailsForm(selectedAsset);
-                // detailsForm.ShowDialog();
+                var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
+                if (selectedRow.Cells["Id"].Value != null) // Verifica que la celda no sea nula
+                {
+                    string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString();
+                    DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
+                    detailsForm.Show();
+                }
+                else
+                {
+                    MessageBox.Show("The selected crypto asset does not have an ID.");
+                }
             }
             else
             {
@@ -346,7 +379,7 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["Symbol"].Value.ToString(); // Asegúrate de que el nombre de la columna "ID" coincide
+                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
 
                 try
                 {
@@ -357,47 +390,35 @@ namespace CryptoTrackerApp
                         return;
                     }
 
+                    // Buscar el registro en la base de datos Supabase
                     var response = await supabaseClient
                         .From<FavoriteCryptos>()
-                        .Where(x => x.IdUser == userIdGuid)
+                        .Where(x => x.UserId == userIdGuid && x.CryptoId == selectedCryptoId)
                         .Get();
 
-                    var favoriteCryptos = response.Models.FirstOrDefault();
+                    var favoriteCrypto = response.Models.FirstOrDefault();
 
-                    if (favoriteCryptos != null)
+                    if (favoriteCrypto != null)
                     {
-                        List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
-                        //MessageBox.Show(selectedCryptoId);
-                        if (idCryptoList.Contains(selectedCryptoId))
+                        // Eliminar el registro de la base de datos Supabase
+                        var deleteResponse = await supabaseClient
+                            .From<FavoriteCryptos>()
+                            .Delete(favoriteCrypto);
+
+                        if (deleteResponse != null)
                         {
-                            idCryptoList.Remove(selectedCryptoId);
-                            
-                            favoriteCryptos.IdCrypto = idCryptoList.ToArray();
-
-                            var updateResponse = await supabaseClient
-                                .From<FavoriteCryptos>()
-                                .Update(favoriteCryptos);
-
-                            if (updateResponse != null)
-                            {
-                                //MessageBox.Show("Crypto removed from favorites successfully.");
-                                // Limpia el DataGridView antes de recargar los datos
-                                dataGridViewCryptoAssets.Rows.Clear();
-                                LoadCryptoAssets();
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to update favorite cryptos.");
-                            }
+                            // Actualizar el DataGridView después de eliminar el registro
+                            dataGridViewCryptoAssets.Rows.Clear();
+                            LoadCryptoAssets();
                         }
                         else
                         {
-                            MessageBox.Show("Selected crypto is not in favorites.");
+                            MessageBox.Show("Failed to remove the crypto from favorites.");
                         }
                     }
                     else
                     {
-                        MessageBox.Show("No favorite cryptos found for this user.");
+                        MessageBox.Show("Selected crypto is not in favorites.");
                     }
                 }
                 catch (Exception ex)
@@ -411,19 +432,97 @@ namespace CryptoTrackerApp
             }
         }
 
+        private void MainForm_Load(object sender, EventArgs e) { }
 
+        private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
 
-        private void MainForm_Load(object sender, EventArgs e)
+        private void btnLimits_Click(object sender, EventArgs e)
         {
-
+            if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
+            {
+                var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
+                string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
+                LimitsForm changeLimitsForm = new LimitsForm(session, selectedCryptoId);
+                changeLimitsForm.Show();
+            }
+            else
+            {
+                MessageBox.Show("Please select a crypto asset to update limits.");
+            }
         }
 
-        private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
 
+        public async void UpdateFavoriteCryptos()
+        {
+            List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
+            List<string> cryptoIds = new List<string>();
+
+            foreach (var asset in assets)
+            {
+                cryptoIds.Add(asset.Symbol);
+            }
+
+            string[] idCryptoArray = new string[0];
+            try
+            {
+                Guid userIdGuid;
+                if (!Guid.TryParse(userId, out userIdGuid))
+                {
+                    MessageBox.Show("Invalid user ID format.");
+                    return;
+                }
+
+                var response = await supabaseClient
+                    .From<FavoriteCryptos>()
+                    .Where(x => x.UserId == userIdGuid)
+                    .Get();
+
+                var favoriteCryptos = response.Models;
+
+                if (favoriteCryptos != null && favoriteCryptos.Any())
+                {
+                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
+                }
+                else
+                {
+                    MessageBox.Show("No favorite cryptos found for this user.");
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                return;
+            }
+
+            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
+            dataGridViewCryptoAssets.Rows.Clear();
+            for (int i = 0; i < assets.Count; i++)
+            {
+                var asset = assets[i];
+                if (favoriteIds.Contains(asset.Symbol))
+                {
+                    string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
+                    string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
+                    string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
+                    string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
+                    string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
+
+
+                    dataGridViewCryptoAssets.Rows.Add(
+                        asset.Rank,
+                        asset.Symbol,
+                        asset.Name,
+                        asset.Supply,
+                        formattedMarketCapUsd,
+                        formattedVolumeUsd24Hr,
+                        formattedPriceUsd,
+                        formattedChangePercent24Hr,
+                        formattedVwap24Hr,
+                        asset.Id
+                    );
+                }
+            }
         }
     }
-
-
 }
-
