@@ -1,9 +1,12 @@
-﻿using System;
+﻿using CryptoTrackerApp.Classes;
+using Microsoft.VisualBasic.ApplicationServices;
+using Supabase.Gotrue;
+using System;
 using System.Net;
 using System.Net.Mail;
 using System.Threading.Tasks;
 
-public class EmailService
+public partial class EmailService
 {
     private string smtpServer = "smtp-relay.brevo.com";
     private int port = 587;
@@ -41,11 +44,11 @@ public class EmailService
                 try
                 {
                     await smtp.SendMailAsync(message);
-                    Console.WriteLine("Correo enviado exitosamente.");
+                    MessageBox.Show("Correo enviado exitosamente.");
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error al enviar el correo: " + ex.Message);
+                    MessageBox.Show("Error al enviar el correo: " + ex.Message);
                 }
             }
         }

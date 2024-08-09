@@ -2,17 +2,14 @@ namespace CryptoTrackerApp
 {
     internal static class Program
     {
-        /// <summary>
-        ///  The main entry point for the application.
-        /// </summary>
         [STAThread]
         static void Main()
         {
-            // To customize application configuration such as set high DPI settings or default font,
-            // see https://aka.ms/applicationconfiguration.
+            // Inicializa la configuración de la aplicación
             ApplicationConfiguration.Initialize();
-            Application.Run(new LoginForm()); //RECORDAR DESCOMENTAR EL LOGIN
-            //Application.Run(new MainForm());
+
+            // Ejecuta el formulario principal de la aplicación
+            Application.Run(new LoginForm()); // O MainForm dependiendo de tu lógica
         }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Windows.Forms;
+using CryptoTrackerApp.Classes;
 using Supabase;
 
 namespace CryptoTrackerApp
@@ -41,9 +42,10 @@ namespace CryptoTrackerApp
 
                 if (session != null && session.AccessToken != null)
                 {
-                    // Almacenar el token en las propiedades de configuración
-                    //Properties.Settings.Default.JWTToken = session.AccessToken;
-                    //Properties.Settings.Default.Save();
+                    // Iniciar la tarea en segundo plano con la sesión
+                    TaskBackgroundService taskBackgroundMailService = new TaskBackgroundService();
+                    _ = taskBackgroundMailService.RunBackgroundTaskAsync(session);
+
                     MainForm mainForm = new MainForm(session);
                     mainForm.Show();
                     this.Hide();
