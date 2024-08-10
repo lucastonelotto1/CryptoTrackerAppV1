@@ -44,7 +44,7 @@ public partial class EmailService
                 try
                 {
                     await smtp.SendMailAsync(message);
-                    MessageBox.Show("Correo enviado exitosamente.");
+                    //MessageBox.Show("Correo enviado exitosamente.");
                 }
                 catch (Exception ex)
                 {

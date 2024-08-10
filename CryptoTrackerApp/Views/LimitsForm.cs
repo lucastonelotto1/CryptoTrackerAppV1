@@ -45,7 +45,7 @@ namespace CryptoTrackerApp.Views
                     MessageBox.Show("Invalid user ID format.");
                     return;
                 }
-
+                
                 var response = await supabaseClient
                     .From<FavoriteCryptos>()
                     .Where(x => x.UserId == userIdGuid && x.CryptoId == CryptoId)

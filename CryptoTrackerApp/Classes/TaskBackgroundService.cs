@@ -46,7 +46,6 @@ namespace CryptoTrackerApp.Classes
                         MessageBox.Show("Invalid user ID format.");
                         return;
                     }
-
                     // Obtén la lista de criptomonedas favoritas del usuario desde Supabase
                     var favoriteCryptos = await supabaseClient
                         .From<FavoriteCryptos>()
@@ -68,15 +67,35 @@ namespace CryptoTrackerApp.Classes
                             //MessageBox.Show($"La criptomoneda {matchingCrypto.Name} ha cambiado un {changePercent24Hr}% en las últimas 24 horas.");
 
                             if (changePercent24Hr > favorite.Limit)
-                            { 
-                               //MessageBox.Show($"La criptomoneda {matchingCrypto.Name} ha superado el límite establecido. Cambio en 24 horas: {changePercent24Hr}%");
-                                emailService.SendEmailAsync(email, name, $"La criptomoneda {matchingCrypto.Name} ha superado el límite establecido. Cambio en 24 horas: {changePercent24Hr}%", $"<h1>La criptomoneda {matchingCrypto.Name} ha superado el límite establecido. Cambio en 24 horas: {changePercent24Hr}% </h1>");
+                            {
+                                //MessageBox.Show($"La criptomoneda {matchingCrypto.Name} ha superado el límite establecido. Cambio en 24 horas: {changePercent24Hr}%");
+                                await emailService.SendEmailAsync(
+                                    email,
+                                    name,
+                                    $"The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.",
+                                    $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
+                                );
+                                DateTime now = DateTime.Now;
+                                string argentinaTime = now.ToString("dd/MM HH:mm");
+
+                                var newAlert = new AlertsHistory
+                                {
+                                    UserId = userIdGuid,
+                                    CryptoIdOutOfLimit = matchingCrypto.Name,
+                                    ChangePercent = (float)matchingCrypto.ChangePercent24Hr,
+                                    Time = argentinaTime
+                                };
+
+                                // Inserta la nueva entrada en la base de datos
+                                var insertResponse = await supabaseClient
+                                    .From<AlertsHistory>()
+                                    .Insert(newAlert);
                             }
                         }
                     }
 
                     // Espera 5 minutos
-                    await Task.Delay(TimeSpan.FromSeconds(30));
+                    await Task.Delay(TimeSpan.FromSeconds(10));
                 }
             }
             catch (Exception ex)

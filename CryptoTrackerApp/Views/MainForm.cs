@@ -32,6 +32,7 @@ using CryptoTrackerApp;
 using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
+using System.Globalization;
 
 
 namespace CryptoTrackerApp
@@ -54,6 +55,8 @@ namespace CryptoTrackerApp
         private Button btnLimits;
         private string userId;
         private string email;
+        private DataGridView dataGridViewAlerts;
+        private DataGridViewTextBoxColumn AlertHistory;
         private Session session;
 
         public MainForm(Session session)
@@ -64,17 +67,20 @@ namespace CryptoTrackerApp
             this.session = session;
             apiClient = new CoinCapApiClient();
             emailService = new EmailService();
-            LoadCryptoAssets();
             string url = "https://cjulheqhpurkozgepnja.supabase.co";
             string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
             supabaseClient = new Supabase.Client(url, key);
             supabaseClient.InitializeAsync().Wait();
+            LoadCryptoAssets();
+            LoadAlerts();
         }
 
         public void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle3 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle4 = new DataGridViewCellStyle();
             dataGridViewCryptoAssets = new DataGridView();
             dataGridViewTextBoxColumn1 = new DataGridViewTextBoxColumn();
             dataGridViewTextBoxColumn2 = new DataGridViewTextBoxColumn();
@@ -90,7 +96,10 @@ namespace CryptoTrackerApp
             btnViewDetails = new Button();
             btnRemoveCrypto = new Button();
             btnLimits = new Button();
+            dataGridViewAlerts = new DataGridView();
+            AlertHistory = new DataGridViewTextBoxColumn();
             ((ISupportInitialize)dataGridViewCryptoAssets).BeginInit();
+            ((ISupportInitialize)dataGridViewAlerts).BeginInit();
             SuspendLayout();
             // 
             // dataGridViewCryptoAssets
@@ -119,7 +128,7 @@ namespace CryptoTrackerApp
             dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
             dataGridViewCryptoAssets.DefaultCellStyle = dataGridViewCellStyle2;
             dataGridViewCryptoAssets.GridColor = Color.FromArgb(1, 26, 43);
-            dataGridViewCryptoAssets.Location = new Point(115, 42);
+            dataGridViewCryptoAssets.Location = new Point(-2, 0);
             dataGridViewCryptoAssets.Margin = new Padding(3, 7, 3, 3);
             dataGridViewCryptoAssets.MultiSelect = false;
             dataGridViewCryptoAssets.Name = "dataGridViewCryptoAssets";
@@ -127,7 +136,7 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.RowHeadersVisible = false;
             dataGridViewCryptoAssets.RowTemplate.Height = 35;
             dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewCryptoAssets.Size = new Size(1068, 341);
+            dataGridViewCryptoAssets.Size = new Size(1068, 384);
             dataGridViewCryptoAssets.TabIndex = 4;
             dataGridViewCryptoAssets.CellContentClick += dataGridViewCryptoAssets_CellContentClick;
             // 
@@ -136,7 +145,6 @@ namespace CryptoTrackerApp
             dataGridViewTextBoxColumn1.HeaderText = "Ranking";
             dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             dataGridViewTextBoxColumn1.ReadOnly = true;
-
             // 
             // dataGridViewTextBoxColumn2
             // 
@@ -197,9 +205,9 @@ namespace CryptoTrackerApp
             // 
             btnAddCrypto.BackColor = Color.FromArgb(64, 228, 175);
             btnAddCrypto.Cursor = Cursors.Hand;
-            btnAddCrypto.Location = new Point(115, 407);
+            btnAddCrypto.Location = new Point(12, 423);
             btnAddCrypto.Name = "btnAddCrypto";
-            btnAddCrypto.Size = new Size(144, 44);
+            btnAddCrypto.Size = new Size(146, 44);
             btnAddCrypto.TabIndex = 1;
             btnAddCrypto.Text = "Add Crypto";
             btnAddCrypto.UseVisualStyleBackColor = false;
@@ -209,9 +217,9 @@ namespace CryptoTrackerApp
             // 
             btnViewDetails.BackColor = Color.FromArgb(64, 228, 175);
             btnViewDetails.Cursor = Cursors.Hand;
-            btnViewDetails.Location = new Point(507, 407);
+            btnViewDetails.Location = new Point(600, 423);
             btnViewDetails.Name = "btnViewDetails";
-            btnViewDetails.Size = new Size(186, 44);
+            btnViewDetails.Size = new Size(146, 44);
             btnViewDetails.TabIndex = 2;
             btnViewDetails.Text = "View Details";
             btnViewDetails.UseVisualStyleBackColor = false;
@@ -221,7 +229,7 @@ namespace CryptoTrackerApp
             // 
             btnRemoveCrypto.BackColor = Color.FromArgb(64, 228, 175);
             btnRemoveCrypto.Cursor = Cursors.Hand;
-            btnRemoveCrypto.Location = new Point(1047, 407);
+            btnRemoveCrypto.Location = new Point(920, 423);
             btnRemoveCrypto.Name = "btnRemoveCrypto";
             btnRemoveCrypto.Size = new Size(146, 44);
             btnRemoveCrypto.TabIndex = 3;
@@ -234,18 +242,62 @@ namespace CryptoTrackerApp
             btnLimits.BackColor = Color.FromArgb(64, 228, 175);
             btnLimits.Cursor = Cursors.Hand;
             btnLimits.FlatStyle = FlatStyle.Flat;
-            btnLimits.Location = new Point(1189, 42);
+            btnLimits.Location = new Point(288, 423);
             btnLimits.Name = "btnLimits";
-            btnLimits.Size = new Size(77, 29);
+            btnLimits.Size = new Size(146, 44);
             btnLimits.TabIndex = 5;
             btnLimits.Text = "Boundaries";
             btnLimits.UseVisualStyleBackColor = false;
-            btnLimits.Click += new System.EventHandler(btnLimits_Click);
+            btnLimits.Click += btnLimits_Click;
+            // 
+            // dataGridViewAlerts
+            // 
+            dataGridViewAlerts.AllowUserToAddRows = false;
+            dataGridViewAlerts.AllowUserToResizeRows = false;
+            dataGridViewAlerts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
+            dataGridViewAlerts.BackgroundColor = Color.FromArgb(0, 18, 30);
+            dataGridViewAlerts.BorderStyle = BorderStyle.None;
+            dataGridViewCellStyle3.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle3.BackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle3.Font = new Font("Sans Serif Collection", 8F, FontStyle.Bold, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle3.ForeColor = Color.White;
+            dataGridViewCellStyle3.SelectionBackColor = Color.FromArgb(1, 29, 43);
+            dataGridViewCellStyle3.SelectionForeColor = Color.White;
+            dataGridViewCellStyle3.WrapMode = DataGridViewTriState.True;
+            dataGridViewAlerts.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            dataGridViewAlerts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewAlerts.Columns.AddRange(new DataGridViewColumn[] { AlertHistory });
+            dataGridViewCellStyle4.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle4.BackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle4.Font = new Font("Sans Serif Collection", 6F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            dataGridViewCellStyle4.ForeColor = Color.FromArgb(56, 152, 213);
+            dataGridViewCellStyle4.SelectionBackColor = Color.FromArgb(1, 26, 43);
+            dataGridViewCellStyle4.SelectionForeColor = SystemColors.HighlightText;
+            dataGridViewCellStyle4.WrapMode = DataGridViewTriState.False;
+            dataGridViewAlerts.DefaultCellStyle = dataGridViewCellStyle4;
+            dataGridViewAlerts.GridColor = Color.FromArgb(1, 26, 43);
+            dataGridViewAlerts.Location = new Point(1063, 0);
+            dataGridViewAlerts.MultiSelect = false;
+            dataGridViewAlerts.Name = "dataGridViewAlerts";
+            dataGridViewAlerts.ReadOnly = true;
+            dataGridViewAlerts.RowHeadersVisible = false;
+            dataGridViewAlerts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            dataGridViewAlerts.Size = new Size(257, 384);
+            dataGridViewAlerts.TabIndex = 6;
+            dataGridViewAlerts.CellContentClick += dataGridViewAlerts_CellContentClick;
+            // 
+            // AlertHistory
+            // 
+            AlertHistory.HeaderText = "Notifications";
+            AlertHistory.Name = "AlertHistory";
+            AlertHistory.ReadOnly = true;
+            AlertHistory.ToolTipText = "Notifications";
             // 
             // MainForm
             // 
             BackColor = Color.FromArgb(0, 18, 30);
-            ClientSize = new Size(1277, 473);
+            ClientSize = new Size(1319, 479);
+            Controls.Add(dataGridViewAlerts);
             Controls.Add(btnLimits);
             Controls.Add(btnRemoveCrypto);
             Controls.Add(btnViewDetails);
@@ -255,6 +307,7 @@ namespace CryptoTrackerApp
             Text = "Home";
             Load += MainForm_Load;
             ((ISupportInitialize)dataGridViewCryptoAssets).EndInit();
+            ((ISupportInitialize)dataGridViewAlerts).EndInit();
             ResumeLayout(false);
         }
 
@@ -451,6 +504,60 @@ namespace CryptoTrackerApp
             }
         }
 
+        private async void LoadAlerts()
+        {
+            try
+            {
+                // Obtenemos la fecha de hace 6 días
+                DateTime sixDaysAgo = DateTime.UtcNow.AddDays(-6);
+                Guid userIdGuid;
+                if (!Guid.TryParse(userId, out userIdGuid))
+                {
+                    MessageBox.Show("Invalid user ID format.");
+                    return;
+                }
+
+                // Consultamos la tabla AlertsHistory filtrando por userId
+                var response = await supabaseClient
+                    .From<AlertsHistory>()
+                    .Where(x => x.UserId == userIdGuid)
+                    .Get();
+
+                if (response.Models != null)
+                {
+                    // Filtramos los resultados en memoria
+                    var filteredAlerts = response.Models
+                        .Where(x => DateTime.ParseExact(x.Time, "dd/MM HH:mm", CultureInfo.InvariantCulture) >= sixDaysAgo)
+                        .ToList();
+
+                    if (filteredAlerts.Count > 0)
+                    {
+                        // Limpiamos el DataGridView antes de llenarlo con los nuevos datos
+                        dataGridViewAlerts.Rows.Clear();
+
+                        // Rellenamos el DataGridView con la información de CryptoIdOutOfLimit y ChangePercent
+                        foreach (var alert in filteredAlerts)
+                        {
+                            dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {alert.ChangePercent}%");
+                        }
+                    }
+                    else
+                    {
+                        MessageBox.Show("No alerts found for the last 6 days.");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No alerts found for the last 6 days.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading alerts: {ex.Message}");
+            }
+        }
+
+
 
         public async void UpdateFavoriteCryptos()
         {
@@ -523,6 +630,11 @@ namespace CryptoTrackerApp
                     );
                 }
             }
+        }
+
+        private void dataGridViewAlerts_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }
