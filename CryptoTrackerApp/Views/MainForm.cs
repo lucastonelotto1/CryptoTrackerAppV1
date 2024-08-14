@@ -33,6 +33,7 @@ using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
 using System.Globalization;
+using NLog;
 
 
 namespace CryptoTrackerApp
@@ -58,9 +59,12 @@ namespace CryptoTrackerApp
         private DataGridView dataGridViewAlerts;
         private DataGridViewTextBoxColumn AlertHistory;
         private Session session;
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public MainForm(Session session)
         {
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Aplicación iniciada.");
             InitializeComponent();
             userId = session.User.Id;
             email = session.User.Email;
@@ -357,8 +361,12 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
                 return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
 
             List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
@@ -476,7 +484,11 @@ namespace CryptoTrackerApp
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occurred while removing the crypto: " + ex.Message);
+                    Logger.Error("An error occurred while removing the crypto: " + ex.Message);
+                }
+                finally
+                {
+                    LogManager.Shutdown();
                 }
             }
             else
@@ -553,7 +565,11 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading alerts: {ex.Message}");
+                Logger.Error($"Error loading alerts: {ex.Message}");
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 
@@ -598,8 +614,12 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
                 return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
 
             List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
