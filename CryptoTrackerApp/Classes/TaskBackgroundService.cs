@@ -76,7 +76,7 @@ namespace CryptoTrackerApp.Classes
                                     $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
                                 );
                                 DateTime now = DateTime.Now;
-                                string argentinaTime = now.ToString("dd/MM HH:mm");
+                                string argentinaTime = now.ToString("dd/MM/yyyy HH:mm");
 
                                 var newAlert = new AlertsHistory
                                 {
@@ -95,7 +95,7 @@ namespace CryptoTrackerApp.Classes
                     }
 
                     // Espera 5 minutos
-                    await Task.Delay(TimeSpan.FromSeconds(10));
+                    await Task.Delay(TimeSpan.FromHours(1));
                 }
             }
             catch (Exception ex)

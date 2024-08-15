@@ -1,47 +1,17 @@
 ﻿
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Supabase;
-using Newtonsoft.Json;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
 using CryptoTrackerApp.Classes;
-using System.Windows.Forms;
-using System.Linq;
-using System.Collections.Generic;
-using Supabase.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Forms;
-using System.Linq;
-using System.Collections.Generic;
-using CryptoTrackerApp;
 using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
-using System.Globalization;
 
 
 namespace CryptoTrackerApp
 {
     public partial class MainForm : Form
     {
-        private CoinCapApiClient apiClient;
-        private EmailService emailService;
-        private Supabase.Client supabaseClient;
+
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn1;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn2;
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn3;
@@ -53,28 +23,31 @@ namespace CryptoTrackerApp
         private DataGridViewTextBoxColumn dataGridViewTextBoxColumn9;
         private DataGridViewTextBoxColumn Id;
         private Button btnLimits;
-        private string userId;
-        private string email;
         private DataGridView dataGridViewAlerts;
         private DataGridViewTextBoxColumn AlertHistory;
+
+        // Instances
+        private CoinCapApiClient apiClient;
+        private DatabaseHelper databaseHelper;
+        private string userId;
         private Session session;
 
         public MainForm(Session session)
         {
             InitializeComponent();
             userId = session.User.Id;
-            email = session.User.Email;
             this.session = session;
+
+            // Instances
+            databaseHelper = new DatabaseHelper();
             apiClient = new CoinCapApiClient();
-            emailService = new EmailService();
-            string url = "https://cjulheqhpurkozgepnja.supabase.co";
-            string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
-            supabaseClient = new Supabase.Client(url, key);
-            supabaseClient.InitializeAsync().Wait();
+
+            // Data Loading
             LoadCryptoAssets();
             LoadAlerts();
         }
 
+        // Designer
         public void InitializeComponent()
         {
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
@@ -310,25 +283,24 @@ namespace CryptoTrackerApp
             ((ISupportInitialize)dataGridViewAlerts).EndInit();
             ResumeLayout(false);
         }
-
         private DataGridView dataGridViewCryptoAssets;
         private Button btnViewDetails;
         private Button btnRemoveCrypto;
         private Button btnAddCrypto;
 
 
-
+        // Data Load
         private async void LoadCryptoAssets()
         {
             List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
             List<string> cryptoIds = new List<string>();
+            List<string> idCryptoArray = new List<string>();
 
             foreach (var asset in assets)
             {
                 cryptoIds.Add(asset.Symbol);
             }
 
-            string[] idCryptoArray = new string[0];
             try
             {
                 Guid userIdGuid;
@@ -338,28 +310,7 @@ namespace CryptoTrackerApp
                     return;
                 }
 
-                var response = await supabaseClient
-                    .From<FavoriteCryptos>()
-                    .Where(x => x.UserId == userIdGuid)
-                    .Get();
-
-                var favoriteCryptos = response.Models;
-
-                if (favoriteCryptos != null && favoriteCryptos.Any())
-                {
-                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
-                }
-                else
-                {
-                    MessageBox.Show("No favorite cryptos found for this user.");
-                    return;
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
-                return;
-            }
+            idCryptoArray = await GetFavoriteCryptoIds();
 
             List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
 
@@ -389,20 +340,50 @@ namespace CryptoTrackerApp
                     );
                 }
             }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                return;
+            }
         }
 
+        private async void LoadAlerts()
+        {
+            try
+            {
+                DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
+                var recentAlerts = await databaseHelper.GetRecentAlerts(userId, cutoffDate);
+
+                if (recentAlerts.Any())
+                {
+                    dataGridViewAlerts.Rows.Clear();
+                    foreach (var alert in recentAlerts)
+                    {
+                        // Mostrar información de alerta para depuración
+
+                        dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {alert.ChangePercent}%, at {alert.Time}");
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No alerts found for the last 6 days.");
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading alerts: {ex.Message}");
+            }
+        }
+
+
+        // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
             AssetGridForm assetGridForm = new AssetGridForm(session, this);
             assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();
-        }
-
-        private void AssetGridForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            this.Show();
-            UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
         }
 
         private void btnViewDetails_Click(object sender, EventArgs e)
@@ -436,43 +417,15 @@ namespace CryptoTrackerApp
 
                 try
                 {
-                    Guid userIdGuid;
-                    if (!Guid.TryParse(userId, out userIdGuid))
-                    {
-                        MessageBox.Show("Invalid user ID format.");
-                        return;
-                    }
+                    // Check user ID validity (already handled in DatabaseHelper)
+                    // Remove crypto from database using DatabaseHelper
+                    await databaseHelper.RemoveFavoriteCrypto(userId, selectedCryptoId);
 
-                    // Buscar el registro en la base de datos Supabase
-                    var response = await supabaseClient
-                        .From<FavoriteCryptos>()
-                        .Where(x => x.UserId == userIdGuid && x.CryptoId == selectedCryptoId)
-                        .Get();
+                    // Update DataGridView after successful removal
+                    dataGridViewCryptoAssets.Rows.Clear();
+                    LoadCryptoAssets();
 
-                    var favoriteCrypto = response.Models.FirstOrDefault();
-
-                    if (favoriteCrypto != null)
-                    {
-                        // Eliminar el registro de la base de datos Supabase
-                        var deleteResponse = await supabaseClient
-                            .From<FavoriteCryptos>()
-                            .Delete(favoriteCrypto);
-
-                        if (deleteResponse != null)
-                        {
-                            // Actualizar el DataGridView después de eliminar el registro
-                            dataGridViewCryptoAssets.Rows.Clear();
-                            LoadCryptoAssets();
-                        }
-                        else
-                        {
-                            MessageBox.Show("Failed to remove the crypto from favorites.");
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("Selected crypto is not in favorites.");
-                    }
+                    MessageBox.Show("Crypto successfully removed from favorites.");
                 }
                 catch (Exception ex)
                 {
@@ -484,10 +437,6 @@ namespace CryptoTrackerApp
                 MessageBox.Show("Please select a crypto asset to remove it from favorites.");
             }
         }
-
-        private void MainForm_Load(object sender, EventArgs e) { }
-
-        private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
 
         private void btnLimits_Click(object sender, EventArgs e)
         {
@@ -504,137 +453,70 @@ namespace CryptoTrackerApp
             }
         }
 
-        private async void LoadAlerts()
+
+        // Tasks
+        private async Task<List<string>> GetFavoriteCryptoIds()
         {
-            try
-            {
-                // Obtenemos la fecha de hace 6 días
-                DateTime sixDaysAgo = DateTime.UtcNow.AddDays(-6);
-                Guid userIdGuid;
-                if (!Guid.TryParse(userId, out userIdGuid))
-                {
-                    MessageBox.Show("Invalid user ID format.");
-                    return;
-                }
-
-                // Consultamos la tabla AlertsHistory filtrando por userId
-                var response = await supabaseClient
-                    .From<AlertsHistory>()
-                    .Where(x => x.UserId == userIdGuid)
-                    .Get();
-
-                if (response.Models != null)
-                {
-                    // Filtramos los resultados en memoria
-                    var filteredAlerts = response.Models
-                        .Where(x => DateTime.ParseExact(x.Time, "dd/MM HH:mm", CultureInfo.InvariantCulture) >= sixDaysAgo)
-                        .ToList();
-
-                    if (filteredAlerts.Count > 0)
-                    {
-                        // Limpiamos el DataGridView antes de llenarlo con los nuevos datos
-                        dataGridViewAlerts.Rows.Clear();
-
-                        // Rellenamos el DataGridView con la información de CryptoIdOutOfLimit y ChangePercent
-                        foreach (var alert in filteredAlerts)
-                        {
-                            dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {alert.ChangePercent}%");
-                        }
-                    }
-                    else
-                    {
-                        MessageBox.Show("No alerts found for the last 6 days.");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("No alerts found for the last 6 days.");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading alerts: {ex.Message}");
-            }
+            var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
+            return favoriteCryptos.Select(x => x.CryptoId).ToList();
         }
-
-
-
-        public async void UpdateFavoriteCryptos()
+        public async Task UpdateFavoriteCryptos()
         {
-            List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
-            List<string> cryptoIds = new List<string>();
-
-            foreach (var asset in assets)
-            {
-                cryptoIds.Add(asset.Symbol);
-            }
-
-            string[] idCryptoArray = new string[0];
             try
             {
-                Guid userIdGuid;
-                if (!Guid.TryParse(userId, out userIdGuid))
+                // Get crypto assets and favorite crypto IDs efficiently
+                var assets = await apiClient.GetCryptoAssetsAsync();
+                var favoriteCryptoIds = await GetFavoriteCryptoIds();
+
+                // Clear the DataGridView before populating
+                dataGridViewCryptoAssets.Rows.Clear();
+
+                // Efficiently iterate over assets and check for favorites
+                foreach (var asset in assets)
                 {
-                    MessageBox.Show("Invalid user ID format.");
-                    return;
+                    if (favoriteCryptoIds.Contains(asset.Symbol))
+                    {
+                        // Format prices and add data to DataGridView
+                        dataGridViewCryptoAssets.Rows.Add(
+                            asset.Rank,
+                            asset.Symbol,
+                            asset.Name,
+                            asset.Supply,
+                            Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2"),
+                            Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2"),
+                            Math.Round(asset.PriceUsd, 2).ToString("F2"),
+                            Math.Round(asset.ChangePercent24Hr, 2).ToString("F3"),
+                            Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2"),
+                            asset.Id
+                        );
+                    }
                 }
 
-                var response = await supabaseClient
-                    .From<FavoriteCryptos>()
-                    .Where(x => x.UserId == userIdGuid)
-                    .Get();
-
-                var favoriteCryptos = response.Models;
-
-                if (favoriteCryptos != null && favoriteCryptos.Any())
-                {
-                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
-                }
-                else
+                // Display message if no favorites are found (optional)
+                if (!favoriteCryptoIds.Any())
                 {
                     MessageBox.Show("No favorite cryptos found for this user.");
-                    return;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
-                return;
-            }
-
-            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
-            dataGridViewCryptoAssets.Rows.Clear();
-            for (int i = 0; i < assets.Count; i++)
-            {
-                var asset = assets[i];
-                if (favoriteIds.Contains(asset.Symbol))
-                {
-                    string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
-                    string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
-                    string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
-                    string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
-                    string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
-
-
-                    dataGridViewCryptoAssets.Rows.Add(
-                        asset.Rank,
-                        asset.Symbol,
-                        asset.Name,
-                        asset.Supply,
-                        formattedMarketCapUsd,
-                        formattedVolumeUsd24Hr,
-                        formattedPriceUsd,
-                        formattedChangePercent24Hr,
-                        formattedVwap24Hr,
-                        asset.Id
-                    );
-                }
+                MessageBox.Show("An error occurred while updating crypto assets: " + ex.Message);
             }
         }
 
-        private void dataGridViewAlerts_CellContentClick(object sender, DataGridViewCellEventArgs e)
+
+        // Data Refresh
+        private void AssetGridForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-
+            this.Show();
+            UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
+            LoadAlerts(); // Refresca las alertas al volver del AssetGridForm
         }
+
+
+        // Not used methods
+        private void MainForm_Load(object sender, EventArgs e) { }
+        private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
+        private void dataGridViewAlerts_CellContentClick(object sender, DataGridViewCellEventArgs e){}
     }
 }

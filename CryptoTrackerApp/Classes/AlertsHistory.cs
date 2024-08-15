@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.Classes
 {
-    public class AlertsHistory:BaseModel
+    public class AlertsHistory : BaseModel
     {
         [PrimaryKey("AlertId")]
         public int Id { get; set; }
