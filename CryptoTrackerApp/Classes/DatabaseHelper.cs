@@ -79,8 +79,6 @@ public class DatabaseHelper : BaseModel
         return recentAlerts;
     }
 
-
-
     public async Task AddFavoriteCrypto(string userId, string cryptoId)
     {
         Guid userIdGuid;

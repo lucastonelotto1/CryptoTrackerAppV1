@@ -345,8 +345,12 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
                 return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 
@@ -521,6 +525,6 @@ namespace CryptoTrackerApp
         {
             this.Show();
             UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
-            LoadAlerts(); // Refresca las alertas al volver del AssetGridForm
+            //LoadAlerts(); // Refresca las alertas al volver del AssetGridForm
         }
     } }
