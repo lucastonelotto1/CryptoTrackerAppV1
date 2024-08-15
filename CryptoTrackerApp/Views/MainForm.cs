@@ -5,6 +5,8 @@ using System.Data;
 using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
+using System.Globalization;
+using NLog;
 
 
 namespace CryptoTrackerApp
@@ -26,14 +28,18 @@ namespace CryptoTrackerApp
         private DataGridView dataGridViewAlerts;
         private DataGridViewTextBoxColumn AlertHistory;
 
+
         // Instances
         private CoinCapApiClient apiClient;
         private DatabaseHelper databaseHelper;
-        private string userId;
         private Session session;
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        private string userId;
 
         public MainForm(Session session)
         {
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Aplicación iniciada.");
             InitializeComponent();
             userId = session.User.Id;
             this.session = session;
@@ -111,7 +117,6 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCryptoAssets.Size = new Size(1068, 384);
             dataGridViewCryptoAssets.TabIndex = 4;
-            dataGridViewCryptoAssets.CellContentClick += dataGridViewCryptoAssets_CellContentClick;
             // 
             // dataGridViewTextBoxColumn1
             // 
@@ -257,7 +262,6 @@ namespace CryptoTrackerApp
             dataGridViewAlerts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewAlerts.Size = new Size(257, 384);
             dataGridViewAlerts.TabIndex = 6;
-            dataGridViewAlerts.CellContentClick += dataGridViewAlerts_CellContentClick;
             // 
             // AlertHistory
             // 
@@ -278,7 +282,6 @@ namespace CryptoTrackerApp
             Controls.Add(dataGridViewCryptoAssets);
             Name = "MainForm";
             Text = "Home";
-            Load += MainForm_Load;
             ((ISupportInitialize)dataGridViewCryptoAssets).EndInit();
             ((ISupportInitialize)dataGridViewAlerts).EndInit();
             ResumeLayout(false);
@@ -310,36 +313,36 @@ namespace CryptoTrackerApp
                     return;
                 }
 
-            idCryptoArray = await GetFavoriteCryptoIds();
+                idCryptoArray = await GetFavoriteCryptoIds();
 
-            List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
+                List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
 
-            for (int i = 0; i < assets.Count; i++)
-            {
-                var asset = assets[i];
-                if (favoriteIds.Contains(asset.Symbol))
+                for (int i = 0; i < assets.Count; i++)
                 {
-                    string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
-                    string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
-                    string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
-                    string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
-                    string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
+                    var asset = assets[i];
+                    if (favoriteIds.Contains(asset.Symbol))
+                    {
+                        string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
+                        string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
+                        string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
+                        string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
+                        string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
 
 
-                    dataGridViewCryptoAssets.Rows.Add(
-                        asset.Rank,
-                        asset.Symbol,
-                        asset.Name,
-                        asset.Supply,
-                        formattedMarketCapUsd,
-                        formattedVolumeUsd24Hr,
-                        formattedPriceUsd,
-                        formattedChangePercent24Hr,
-                        formattedVwap24Hr,
-                        asset.Id
-                    );
+                        dataGridViewCryptoAssets.Rows.Add(
+                            asset.Rank,
+                            asset.Symbol,
+                            asset.Name,
+                            asset.Supply,
+                            formattedMarketCapUsd,
+                            formattedVolumeUsd24Hr,
+                            formattedPriceUsd,
+                            formattedChangePercent24Hr,
+                            formattedVwap24Hr,
+                            asset.Id
+                        );
+                    }
                 }
-            }
             }
             catch (Exception ex)
             {
@@ -429,7 +432,11 @@ namespace CryptoTrackerApp
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occurred while removing the crypto: " + ex.Message);
+                    Logger.Error("An error occurred while removing the crypto: " + ex.Message);
+                }
+                finally
+                {
+                    LogManager.Shutdown();
                 }
             }
             else
@@ -500,7 +507,12 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while updating crypto assets: " + ex.Message);
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
+                return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 
@@ -512,11 +524,4 @@ namespace CryptoTrackerApp
             UpdateFavoriteCryptos(); // Refresca los datos al volver del AssetGridForm
             LoadAlerts(); // Refresca las alertas al volver del AssetGridForm
         }
-
-
-        // Not used methods
-        private void MainForm_Load(object sender, EventArgs e) { }
-        private void dataGridViewCryptoAssets_CellContentClick(object sender, DataGridViewCellEventArgs e) { }
-        private void dataGridViewAlerts_CellContentClick(object sender, DataGridViewCellEventArgs e){}
-    }
-}
+    } }
