@@ -5,7 +5,6 @@ using System.Data;
 using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
-using System.Globalization;
 using NLog;
 
 
