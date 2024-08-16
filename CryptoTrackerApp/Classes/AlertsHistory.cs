@@ -8,19 +8,22 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.Classes
 {
-    public class FavoriteCryptos : BaseModel
+    public class AlertsHistory : BaseModel
     {
-        [PrimaryKey("FavoriteId")]
+        [PrimaryKey("AlertId")]
         public int Id { get; set; }
 
         [Column("UserId")]
         public Guid UserId { get; set; }
 
-        [Column("CryptoId")]
-        public string CryptoId { get; set; }
+        [Column("CryptoIdOutOfLimit")]
+        public string CryptoIdOutOfLimit { get; set; }
 
-        [Column("Limit")]
-        public float Limit { get; set; }
+        [Column("ChangePercent")]
+        public float ChangePercent { get; set; }
+
+        [Column("Time")]
+        public string Time { get; set; }
     }
 
 

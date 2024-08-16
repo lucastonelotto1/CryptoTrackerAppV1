@@ -14,6 +14,7 @@ using Supabase;
 using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
 using CryptoTrackerApp;
+using Supabase.Gotrue;
 
 namespace CryptoTrackerApp.Views
 {
@@ -22,13 +23,17 @@ namespace CryptoTrackerApp.Views
     {
         private CoinCapApiClient apiClient;
         private Supabase.Client supabaseClient;
-        private string userId = "f3606c6c-072e-4e30-998a-051d73d4153f";
-        public AssetGridForm()
+        private string userId;
+        private Session session;
+        private MainForm mainForm;
+
+        public AssetGridForm(Session session, MainForm mainForm)
         {
             InitializeComponent();
+            this.mainForm = mainForm;
+            userId = session.User.Id;
             apiClient = new CoinCapApiClient();
             LoadDataAsync();
-            // Configura el cliente de Supabase
             string url = "https://cjulheqhpurkozgepnja.supabase.co";
             string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
             supabaseClient = new Supabase.Client(url, key);
@@ -38,21 +43,12 @@ namespace CryptoTrackerApp.Views
         private async void LoadDataAsync()
         {
             List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
-            List<string> cryptoIds = new List<string>();
-
-            foreach (var asset in assets)
-            {
-                cryptoIds.Add(asset.Symbol);
-            }
-
-            string json = JsonConvert.SerializeObject(cryptoIds);
-            //MessageBox.Show("Lista de IDs de criptomonedas: " + json);
+            List<string> cryptoIds = assets.Select(asset => asset.Symbol).ToList();
 
             string[] idCryptoArray = new string[0];
             try
             {
-                Guid userIdGuid;
-                if (!Guid.TryParse(userId, out userIdGuid))
+                if (!Guid.TryParse(userId, out Guid userIdGuid))
                 {
                     MessageBox.Show("Invalid user ID format.");
                     return;
@@ -60,16 +56,14 @@ namespace CryptoTrackerApp.Views
 
                 var response = await supabaseClient
                     .From<FavoriteCryptos>()
-                    .Where(x => x.IdUser == userIdGuid)
+                    .Where(x => x.UserId == userIdGuid)
                     .Get();
 
                 var favoriteCryptos = response.Models;
 
                 if (favoriteCryptos != null && favoriteCryptos.Any())
                 {
-                    idCryptoArray = favoriteCryptos.SelectMany(x => x.IdCrypto).ToArray();
-                    string favoriteJson = JsonConvert.SerializeObject(idCryptoArray);
-                     //MessageBox.Show("Se encontraron las cryptos, todo legal. JSON: " + favoriteJson);
+                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
                 }
                 else
                 {
@@ -82,8 +76,6 @@ namespace CryptoTrackerApp.Views
             }
 
             List<string> nonFavoriteIds = cryptoIds.Except(idCryptoArray).ToList();
-            string nonFavoriteJson = JsonConvert.SerializeObject(nonFavoriteIds);
-            //   MessageBox.Show("Lista de IDs de criptomonedas no favoritas: " + nonFavoriteJson);
 
             foreach (var asset in assets)
             {
@@ -103,74 +95,66 @@ namespace CryptoTrackerApp.Views
                         asset.Explorer
                     );
                 }
-                else
-                {
-                    //     MessageBox.Show($"Cripto favorita, no se agrega: {asset.Name}");
-                }
             }
         }
 
         private async void btnAddCrypto_Click(object sender, EventArgs e)
         {
+            // Verifica que haya una fila seleccionada en el DataGridView
             if (dataGridView1.SelectedRows.Count > 0)
             {
+                // Obtén la fila seleccionada
                 var selectedRow = dataGridView1.SelectedRows[0];
-                string selectedCryptoId = selectedRow.Cells["symbol"].Value.ToString().ToUpper(); // Asegúrate de que el nombre de la columna "ID" coincide
+                // Obtén el ID de la criptomoneda seleccionada (columna "Symbol")
+                string selectedCryptoId = selectedRow.Cells["symbol"].Value.ToString().ToUpper();
 
                 try
                 {
-                    Guid userIdGuid;
-                    if (!Guid.TryParse(userId, out userIdGuid))
+                    // Verifica si el userId es un GUID válido
+                    if (!Guid.TryParse(userId, out Guid userIdGuid))
                     {
                         MessageBox.Show("Invalid user ID format.");
                         return;
                     }
 
+                    // Busca si el usuario ya tiene criptomonedas favoritas en la base de datos
                     var response = await supabaseClient
                         .From<FavoriteCryptos>()
-                        .Where(x => x.IdUser == userIdGuid)
+                        .Where(x => x.UserId == userIdGuid)
                         .Get();
 
-                    var favoriteCryptos = response.Models.FirstOrDefault();
+                    var favoriteCryptos = response.Models;
 
-                    if (favoriteCryptos != null)
+                    // Verifica si la criptomoneda seleccionada ya está en los favoritos del usuario
+                    if (favoriteCryptos != null && favoriteCryptos.Any(fc => fc.CryptoId == selectedCryptoId))
                     {
-                        List<string> idCryptoList = favoriteCryptos.IdCrypto.ToList();
+                        MessageBox.Show("Selected crypto is already in favorites.");
+                        return;
+                    }
 
-                        if (!idCryptoList.Contains(selectedCryptoId))
-                        {
-                            idCryptoList.Add(selectedCryptoId);
+                    // Crea una nueva entrada para la criptomoneda favorita
+                    var newFavorite = new FavoriteCryptos
+                    {
+                        UserId = userIdGuid,
+                        CryptoId = selectedCryptoId,
+                        Limit = 15 // Valor por defecto
+                    };
 
-                            favoriteCryptos.IdCrypto = idCryptoList.ToArray();
+                    // Inserta la nueva entrada en la base de datos
+                    var insertResponse = await supabaseClient
+                        .From<FavoriteCryptos>()
+                        .Insert(newFavorite);
 
-                            var updateResponse = await supabaseClient
-                                .From<FavoriteCryptos>()
-                                .Update(favoriteCryptos);
-
-                            if (updateResponse != null)
-                            {
-                                MessageBox.Show("Crypto added to favorites successfully.");
-
-                                // Limpia el DataGridView antes de recargar los datos
-                                dataGridView1.Rows.Clear();
-
-                                // Recarga los datos
-                                LoadDataAsync();
-
-                            }
-                            else
-                            {
-                                MessageBox.Show("Failed to update favorite cryptos.");
-                            }
-                        }
-                        else
-                        {
-                            MessageBox.Show("Selected crypto is already in favorites.");
-                        }
+                    if (insertResponse.Models.Any())
+                    {
+                        MessageBox.Show("Crypto added to favorites successfully.");
+                        // Refresca los datos del DataGridView para reflejar el cambio
+                        dataGridView1.Rows.Clear();
+                        LoadDataAsync();
                     }
                     else
                     {
-                        MessageBox.Show("No favorite cryptos found for this user.");
+                        MessageBox.Show("Failed to add crypto to favorites.");
                     }
                 }
                 catch (Exception ex)
@@ -208,56 +192,11 @@ namespace CryptoTrackerApp.Views
             }
         }
 
-
-
-        private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void AssetGridForm_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void AddFavorite_Click_1(object sender, EventArgs e)
-        {
-
-        }
-
         private void btnHome_Click(object sender, EventArgs e)
         {
-            InitializeComponent();
-            MainForm mainForm = new MainForm();
-            mainForm.Show();
             this.Hide();
+            mainForm.UpdateFavoriteCryptos();
+            mainForm.Show();
         }
-
-
-
-        /*private void dataGridView1_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void dataGridView1_CellContentClick_1(object sender, DataGridViewCellEventArgs e)
-        {
-
-        }
-
-        private void AssetGrid_Load(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void removeFavorite_Click(object sender, EventArgs e)
-        {
-
-        }*/
     }
 }
