@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using CryptoTrackerApp.Classes;
 using System.Collections.Generic;
+using NLog;
 
 namespace CryptoTrackerApp.Views
 {
@@ -14,17 +15,20 @@ namespace CryptoTrackerApp.Views
         private Session session;
         private string CryptoId;
         private Supabase.Client supabaseClient;
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        private DatabaseHelper databaseHelper;
+
 
         public LimitsForm(Session session, string id)
         {
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Limits Form initialized.");
             InitializeComponent();
             this.session = session;
             this.UserId = session.User.Id;
             this.CryptoId = id;
-            string url = "https://cjulheqhpurkozgepnja.supabase.co";
-            string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
-            supabaseClient = new Supabase.Client(url, key);
-            supabaseClient.InitializeAsync().Wait();
+            databaseHelper = new DatabaseHelper();
+
 
             // Inicializar label y textbox con la posición inicial
             label1.Text = "Update Limits for " + CryptoId;
@@ -39,29 +43,22 @@ namespace CryptoTrackerApp.Views
         {
             try
             {
-                Guid userIdGuid;
-                if (!Guid.TryParse(UserId, out userIdGuid))
-                {
-                    MessageBox.Show("Invalid user ID format.");
-                    return;
-                }
-                
-                var response = await supabaseClient
-                    .From<FavoriteCryptos>()
-                    .Where(x => x.UserId == userIdGuid && x.CryptoId == CryptoId)
-                    .Select("Limit")
-                    .Single();
+                // Usa await para esperar el resultado del método asincrónico
+                var actualLimit = await databaseHelper.GetLimitDb(UserId, CryptoId);
 
-                var actualLimit = response.Limit.ToString();
-
-                textBox1.Text = actualLimit;
-                return;
-            }// Asumiendo que "Limit" es el nombre del campo en la tabla
+                // Convierte el resultado a string y lo asigna al TextBox
+                textBox1.Text = actualLimit.ToString();
+            }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while obtaining the crypto limits: " + ex.Message);
+                Logger.Error("An error occurred while obtaining the crypto limits: " + ex.Message);
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
+
 
         private async void btnUpdateLimits_Click(object sender, EventArgs e)
         {
@@ -73,25 +70,28 @@ namespace CryptoTrackerApp.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Error updating limit: " + ex.Message);
+                Logger.Error("Error updating limit: " + ex.Message);
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 
         private async Task UpdateLimit(float newLimit)
         {
-            var updates = new { Limit = newLimit };
-            Guid userIdGuid;
-            if (!Guid.TryParse(UserId, out userIdGuid))
+           try
             {
-                MessageBox.Show("Invalid user ID format.");
-                return;
+                await databaseHelper.UpdateLimitDb(newLimit, UserId, CryptoId);
             }
-
-            var response = await supabaseClient
-                .From<FavoriteCryptos>()
-                .Where(x => x.UserId == userIdGuid && x.CryptoId == CryptoId)
-                .Set(x => x.Limit, newLimit)
-                .Update();
+            catch (Exception ex)
+            {
+                Logger.Error("Error updating limit: " + ex.Message);
+            }
+            finally
+            {
+                LogManager.Shutdown();
+            }
 
         }
 

@@ -312,6 +312,7 @@ namespace CryptoTrackerApp
                     return;
                 }
 
+                //throw new Exception("Prueba de excepción");
                 idCryptoArray = await GetFavoriteCryptoIds();
 
                 List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
@@ -358,6 +359,7 @@ namespace CryptoTrackerApp
         {
             try
             {
+                //throw new Exception("Prueba de excepción desde LoadAlerts");
                 DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
                 var recentAlerts = await databaseHelper.GetRecentAlerts(userId, cutoffDate);
 
@@ -378,7 +380,12 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading alerts: {ex.Message}");
+                Logger.Error($"Error loading alerts: {ex.Message}");
+                return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
         }
 

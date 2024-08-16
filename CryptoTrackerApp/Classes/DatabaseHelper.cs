@@ -8,6 +8,8 @@ using Supabase.Gotrue;
 using System.Security.Policy;
 using System.Globalization;
 using Supabase.Postgrest.Models;
+using NLog.LayoutRenderers;
+using Microsoft.VisualBasic.ApplicationServices;
 
 public class DatabaseHelper : BaseModel
 {
@@ -121,6 +123,44 @@ public class DatabaseHelper : BaseModel
         }
     }
 
+    public async Task <Session> Authorize(string email, string password)
+    {
+        return await supabaseClient.Auth.SignIn(email, password);
+    }
+
+    public async Task <float> GetLimitDb(string UserId, string cryptoId) 
+    {
+        Guid userIdGuid;
+        if (!Guid.TryParse(UserId, out userIdGuid))
+        {
+            throw new Exception("Invalid user ID format.");
+        }
+
+        var response = await supabaseClient
+            .From<FavoriteCryptos>()
+            .Where(x => x.UserId == userIdGuid && x.CryptoId == cryptoId)
+            .Select("Limit")
+            .Single();
+
+        return response.Limit;
+    }
+
+    public async Task UpdateLimitDb(float newLimit, string UserId ,string cryptoId)
+    {
+        var updates = new { Limit = newLimit };
+        Guid userIdGuid;
+
+        if (!Guid.TryParse(UserId, out userIdGuid))
+        {
+            throw new Exception("Invalid user ID format.");
+        }
+        var response = await supabaseClient
+                .From<FavoriteCryptos>()
+                .Where(x => x.UserId == userIdGuid && x.CryptoId == cryptoId)
+                .Set(x => x.Limit, newLimit)
+                .Update();
+
+    }
 
 }
 
