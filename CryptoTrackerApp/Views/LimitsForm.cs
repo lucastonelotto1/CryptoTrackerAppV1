@@ -1,10 +1,4 @@
 ﻿using Supabase.Gotrue;
-using Supabase;
-using System;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using CryptoTrackerApp.Classes;
-using System.Collections.Generic;
 using NLog;
 
 namespace CryptoTrackerApp.Views

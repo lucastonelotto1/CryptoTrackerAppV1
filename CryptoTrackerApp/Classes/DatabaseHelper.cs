@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Newtonsoft.Json;
-using CryptoTrackerApp.Classes;
+﻿using CryptoTrackerApp.Classes;
 using Supabase.Gotrue;
-using System.Security.Policy;
 using System.Globalization;
 using Supabase.Postgrest.Models;
-using NLog.LayoutRenderers;
-using Microsoft.VisualBasic.ApplicationServices;
+
 
 public class DatabaseHelper : BaseModel
 {
@@ -92,7 +85,8 @@ public class DatabaseHelper : BaseModel
         var favoriteCrypto = new FavoriteCryptos
         {
             UserId = userIdGuid,
-            CryptoId = cryptoId
+            CryptoId = cryptoId,
+            Limit = 15
         };
 
         await supabaseClient
@@ -160,6 +154,27 @@ public class DatabaseHelper : BaseModel
                 .Set(x => x.Limit, newLimit)
                 .Update();
 
+    }
+
+    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
+    {
+        Guid userIdGuid;
+        if (!Guid.TryParse(userId, out userIdGuid))
+        {
+            throw new Exception("Invalid user ID format.");
+        }
+
+        var newAlert = new AlertsHistory
+        {
+            UserId = userIdGuid,
+            CryptoIdOutOfLimit = cryptoIdOutOfLimit,
+            ChangePercent = changePercent,
+            Time = time
+        };
+
+        await supabaseClient
+            .From<AlertsHistory>()
+            .Insert(newAlert);
     }
 
 }

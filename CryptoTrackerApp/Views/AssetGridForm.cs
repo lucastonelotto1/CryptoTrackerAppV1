@@ -3,18 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using CryptoTrackerApp.Classes;
-using Newtonsoft.Json;
-using Supabase;
-using Supabase.Postgrest.Attributes;
-using Supabase.Postgrest.Models;
-using CryptoTrackerApp;
 using Supabase.Gotrue;
+using NLog;
 
 namespace CryptoTrackerApp.Views
 {
@@ -22,22 +13,29 @@ namespace CryptoTrackerApp.Views
     public partial class AssetGridForm : Form
     {
         private CoinCapApiClient apiClient;
-        private Supabase.Client supabaseClient;
-        private string userId;
+        private DatabaseHelper databaseHelper;
         private Session session;
         private MainForm mainForm;
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+        private string userId;
+
+        
+
 
         public AssetGridForm(Session session, MainForm mainForm)
         {
-            InitializeComponent();
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Assets Initialized.");
             this.mainForm = mainForm;
             userId = session.User.Id;
+
+            databaseHelper = new DatabaseHelper();
             apiClient = new CoinCapApiClient();
+
+
+            InitializeComponent();
             LoadDataAsync();
-            string url = "https://cjulheqhpurkozgepnja.supabase.co";
-            string key = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqdWxoZXFocHVya296Z2VwbmphIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTcxOTk2MTA5MiwiZXhwIjoyMDM1NTM3MDkyfQ.K_Xbt0gItJ9U3NFFYlKk-_n-a98GNsFVB4BwCymRbck";
-            supabaseClient = new Supabase.Client(url, key);
-            supabaseClient.InitializeAsync().Wait();
+
         }
 
         private async void LoadDataAsync()
@@ -48,20 +46,10 @@ namespace CryptoTrackerApp.Views
             string[] idCryptoArray = new string[0];
             try
             {
-                if (!Guid.TryParse(userId, out Guid userIdGuid))
-                {
-                    MessageBox.Show("Invalid user ID format.");
-                    return;
-                }
 
-                var response = await supabaseClient
-                    .From<FavoriteCryptos>()
-                    .Where(x => x.UserId == userIdGuid)
-                    .Get();
+                var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
 
-                var favoriteCryptos = response.Models;
-
-                if (favoriteCryptos != null && favoriteCryptos.Any())
+                if (favoriteCryptos != null)
                 {
                     idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
                 }
@@ -72,7 +60,12 @@ namespace CryptoTrackerApp.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show("An error occurred while loading crypto assets: " + ex.Message);
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
+                return;
+            }
+            finally
+            {
+                LogManager.Shutdown();
             }
 
             List<string> nonFavoriteIds = cryptoIds.Except(idCryptoArray).ToList();
@@ -110,20 +103,8 @@ namespace CryptoTrackerApp.Views
 
                 try
                 {
-                    // Verifica si el userId es un GUID válido
-                    if (!Guid.TryParse(userId, out Guid userIdGuid))
-                    {
-                        MessageBox.Show("Invalid user ID format.");
-                        return;
-                    }
 
-                    // Busca si el usuario ya tiene criptomonedas favoritas en la base de datos
-                    var response = await supabaseClient
-                        .From<FavoriteCryptos>()
-                        .Where(x => x.UserId == userIdGuid)
-                        .Get();
-
-                    var favoriteCryptos = response.Models;
+                    var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
 
                     // Verifica si la criptomoneda seleccionada ya está en los favoritos del usuario
                     if (favoriteCryptos != null && favoriteCryptos.Any(fc => fc.CryptoId == selectedCryptoId))
@@ -131,35 +112,21 @@ namespace CryptoTrackerApp.Views
                         MessageBox.Show("Selected crypto is already in favorites.");
                         return;
                     }
-
-                    // Crea una nueva entrada para la criptomoneda favorita
-                    var newFavorite = new FavoriteCryptos
-                    {
-                        UserId = userIdGuid,
-                        CryptoId = selectedCryptoId,
-                        Limit = 15 // Valor por defecto
-                    };
-
-                    // Inserta la nueva entrada en la base de datos
-                    var insertResponse = await supabaseClient
-                        .From<FavoriteCryptos>()
-                        .Insert(newFavorite);
-
-                    if (insertResponse.Models.Any())
-                    {
-                        MessageBox.Show("Crypto added to favorites successfully.");
-                        // Refresca los datos del DataGridView para reflejar el cambio
-                        dataGridView1.Rows.Clear();
-                        LoadDataAsync();
-                    }
-                    else
-                    {
-                        MessageBox.Show("Failed to add crypto to favorites.");
-                    }
+                        
+                    await databaseHelper.AddFavoriteCrypto(userId, selectedCryptoId);
+                    MessageBox.Show("Crypto added to favorites successfully.");
+                    // Refresca los datos del DataGridView para reflejar el cambio
+                    dataGridView1.Rows.Clear();
+                    LoadDataAsync();
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occurred while adding the crypto: " + ex.Message);
+                    Logger.Error("An error occurred while adding the crypto: " + ex.Message);
+                    return;
+                }
+                finally
+                {
+                    LogManager.Shutdown();
                 }
             }
             else

@@ -1,10 +1,6 @@
-﻿using CryptoTrackerApp.Classes;
-using Microsoft.VisualBasic.ApplicationServices;
-using Supabase.Gotrue;
-using System;
+﻿using NLog;
 using System.Net;
 using System.Net.Mail;
-using System.Threading.Tasks;
 
 public partial class EmailService
 {
@@ -15,12 +11,15 @@ public partial class EmailService
     private string fromEmail = "grupops36@gmail.com";
     private string fromName = "Crypto Tracker App";
     private string subject = "Alert from Crypto Tracker App";
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
 
     public async Task SendEmailAsync(string toEmail, string toName, string plainTextContent, string htmlContent)
     {
         var fromAddress = new MailAddress(fromEmail, fromName);
         var toAddress = new MailAddress(toEmail, toName);
-
+        LogManager.LoadConfiguration("nlog.config");
+        Logger.Info("Email Task Initialized.");
         using (var smtp = new SmtpClient
         {
             Host = smtpServer,
@@ -48,7 +47,12 @@ public partial class EmailService
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error al enviar el correo: " + ex.Message);
+                    Logger.Error("An error occurred while sending emails: " + ex.Message);
+                    return;
+                }
+                finally
+                {
+                    LogManager.Shutdown();
                 }
             }
         }

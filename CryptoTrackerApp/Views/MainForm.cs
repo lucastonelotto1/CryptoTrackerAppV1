@@ -38,7 +38,7 @@ namespace CryptoTrackerApp
         public MainForm(Session session)
         {
             LogManager.LoadConfiguration("nlog.config");
-            Logger.Info("Aplicación iniciada.");
+            Logger.Info("Home Initialized.");
             InitializeComponent();
             userId = session.User.Id;
             this.session = session;
@@ -359,7 +359,6 @@ namespace CryptoTrackerApp
         {
             try
             {
-                //throw new Exception("Prueba de excepción desde LoadAlerts");
                 DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
                 var recentAlerts = await databaseHelper.GetRecentAlerts(userId, cutoffDate);
 

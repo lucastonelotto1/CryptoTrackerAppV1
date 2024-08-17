@@ -46,7 +46,7 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                Logger.Error("An error occurred: " + ex.Message);
+                Logger.Error("An error occurred while logging: " + ex.Message);
             }
             finally
             {

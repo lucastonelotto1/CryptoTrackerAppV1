@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
-using Newtonsoft.Json;
+﻿using System.Windows.Forms.DataVisualization.Charting;
 using CryptoTrackerApp.Classes;
+using NLog;
 
 namespace CryptoTracker.Views
 {
@@ -13,9 +8,12 @@ namespace CryptoTracker.Views
     {
         private string cryptoId;
         private static readonly CoinCapApiClient client = new CoinCapApiClient();
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public DetailsForm(string cryptoId)
         {
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Details Initialized.");
             InitializeComponent();
             this.cryptoId = cryptoId;
             LoadCryptoDetails();
@@ -81,15 +79,13 @@ namespace CryptoTracker.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading crypto details: {ex.Message}");
+                Logger.Error("An error occurred while loading crypto details: " + ex.Message);
+                return;
             }
-        }
-
-
-
-        private void DetailsForm_Load(object sender, EventArgs e)
-        {
-
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
         private void btnHome_Click(object sender, EventArgs e)
