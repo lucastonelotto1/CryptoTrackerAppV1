@@ -48,4 +48,10 @@
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="DataAccessLayer\EntityFrameWork\Mapping\" />
+    <Folder Include="DTO\" />
+  </ItemGroup>
+
 </Project>

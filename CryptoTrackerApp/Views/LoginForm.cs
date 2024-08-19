@@ -1,6 +1,6 @@
 using System;
 using System.Windows.Forms;
-using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.Infrastructure;
 using NLog;
 using Supabase;
 
@@ -46,7 +46,7 @@ namespace CryptoTrackerApp
             }
             catch (Exception ex)
             {
-                Logger.Error("An error occurred while logging: " + ex.Message);
+                Logger.Error("An error occurred: " + ex.Message);
             }
             finally
             {

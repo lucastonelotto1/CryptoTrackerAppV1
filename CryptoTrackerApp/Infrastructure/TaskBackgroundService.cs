@@ -1,7 +1,8 @@
-﻿using NLog;
+﻿using CryptoTrackerApp.Classes;
+using NLog;
 using Supabase.Gotrue;
 
-namespace CryptoTrackerApp.Classes
+namespace CryptoTrackerApp.Infrastructure
 {
     public partial class TaskBackgroundService
     {
@@ -9,8 +10,8 @@ namespace CryptoTrackerApp.Classes
         private DatabaseHelper databaseHelper;
         private EmailService emailService;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        
-        
+
+
         private string userId;
         private string email;
         private string name;
@@ -34,7 +35,7 @@ namespace CryptoTrackerApp.Classes
                     //MessageBox.Show("Iniciando ciclo de tarea de fondo.");
                     // Obtén la lista de criptomonedas favoritas del usuario desde Supabase
                     var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
-                        
+
 
                     // Obtener la lista de criptoactivos desde CoinCap
                     List<CryptoAsset> cryptoAssets = await apiClient.GetCryptoAssetsAsync();
@@ -57,7 +58,7 @@ namespace CryptoTrackerApp.Classes
                                     $"The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.",
                                     $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
                                 );
-                                
+
                                 DateTime now = DateTime.Now;
                                 string argentinaTime = now.ToString("dd/MM/yyyy HH:mm");
 
