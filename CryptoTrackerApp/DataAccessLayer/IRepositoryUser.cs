@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CryptoTrackerApp.Domain;
 
 namespace CryptoTrackerApp.DataAccessLayer
 {
-    internal class IRepositoryUser
+    public interface IRepositoryUser : IRepository<User>
     {
     }
 }

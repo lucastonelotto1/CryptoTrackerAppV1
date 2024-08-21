@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.Api
 {
-    internal class IApiResponse
+    public interface IApiResponse
     {
+        dynamic Data { get; set; }
+        void GetAPIResponseItem(string mUrl);
+
     }
 }
