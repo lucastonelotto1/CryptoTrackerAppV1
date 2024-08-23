@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Supabase.Gotrue;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,49 +7,43 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 {
-    public abstract class Repository<TDatabaseHelper, TEntity> : IRepository<TEntity> where TEntity : class where TDatabaseHelper : DatabaseHelper
+    public class Repository : IRepository
+
     {
-        protected readonly TDatabaseHelper iDatabaseHelper;
-        public Repository(TDatabaseHelper pDbContext)
-        {
-            if (pDbContext == null)
-            {
-                throw new ArgumentNullException(nameof(pDbContext));
-            }
+        private readonly Supabase.Client _supabaseClient;
 
-            iDatabaseHelper = pDbContext;
+        public IAlertRepository Alerts { get; private set; }
+        public IUserRepository Users { get; private set; }
+        public ICryptoRepository Cryptos { get; private set; }
+
+
+        public Repository(DatabaseConfig config)
+        {
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+            var databaseConfig = DatabaseConfig.Load(configPath);
+
+            var databaseHelper = new DatabaseHelper(databaseConfig);
+
+            _supabaseClient = new Supabase.Client(config.Url, config.Key);
+            _supabaseClient.InitializeAsync().Wait();
+
+            Alerts = new AlertRepository(_supabaseClient);
+            Users = new UserRepository(_supabaseClient);
+            Cryptos = new CryptoRepository(_supabaseClient);
         }
 
-        public void Add(TEntity pEntity)
+        public async Task<Session> Authorize(string email, string password)
         {
-            if (pEntity == null)
-            {
-                throw new ArgumentNullException(nameof(pEntity));
-            }
-
-            iDatabaseHelper.Set<TEntity>().Add(pEntity);
+            return await _supabaseClient.Auth.SignIn(email, password);
         }
 
-        public TEntity Get(string pNick)
+        public async Task SaveChangesAsync()
         {
-            return iDatabaseHelper.Set<TEntity>().Find(pNick);
+            // En este caso, como estamos usando Supabase, no necesitamos implementar
+            // un SaveChanges explícito, ya que las operaciones se ejecutan inmediatamente.
+            // Sin embargo, si en el futuro cambias a otra tecnología de base de datos,
+            // podrías implementar aquí la lógica para guardar todos los cambios pendientes.
+            await Task.CompletedTask;
         }
-
-        public IEnumerable<TEntity> GetAll()
-        {
-            return iDatabaseHelper.Set<TEntity>();
-        }
-        public void Remove(TEntity pEntity)
-        {
-            if (pEntity == null)
-            {
-                throw new ArgumentNullException(nameof(pEntity));
-            }
-
-            iDatabaseHelper.Set<TEntity>().Remove(pEntity);
-        }
-
-
-
     }
 }

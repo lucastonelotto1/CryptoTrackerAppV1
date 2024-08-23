@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Supabase.Gotrue;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,16 +7,12 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.DataAccessLayer
 {
-    public interface IRepository<TEntity> where TEntity : class
+    public interface IRepository
     {
-
-        void Add(TEntity pEntity);
-
-        void Remove(TEntity pEntity);
-
-        TEntity Get(string pNick);
-
-        IEnumerable<TEntity> GetAll();
-
+        IAlertRepository Alerts { get; }
+        IUserRepository Users { get; }
+        ICryptoRepository Cryptos { get; }
+        Task<Session> Authorize(string email, string password);
+        Task SaveChangesAsync();
     }
 }
