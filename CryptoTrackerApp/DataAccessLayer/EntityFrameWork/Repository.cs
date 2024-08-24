@@ -8,25 +8,16 @@ using System.Threading.Tasks;
 namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 {
     public class Repository : IRepository
-
     {
         private readonly Supabase.Client _supabaseClient;
 
-        public IAlertRepository Alerts { get; private set; }
-        public IUserRepository Users { get; private set; }
-        public ICryptoRepository Cryptos { get; private set; }
+        public IAlertRepository Alerts { get; }
+        public IUserRepository Users { get; }
+        public ICryptoRepository Cryptos { get; }
 
-
-        public Repository(DatabaseConfig config)
+        public Repository(Supabase.Client supabaseClient)
         {
-            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
-            var databaseConfig = DatabaseConfig.Load(configPath);
-
-            var databaseHelper = new DatabaseHelper(databaseConfig);
-
-            _supabaseClient = new Supabase.Client(config.Url, config.Key);
-            _supabaseClient.InitializeAsync().Wait();
-
+            _supabaseClient = supabaseClient;
             Alerts = new AlertRepository(_supabaseClient);
             Users = new UserRepository(_supabaseClient);
             Cryptos = new CryptoRepository(_supabaseClient);
@@ -37,13 +28,10 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             return await _supabaseClient.Auth.SignIn(email, password);
         }
 
-        public async Task SaveChangesAsync()
+        public Task SaveChangesAsync()
         {
-            // En este caso, como estamos usando Supabase, no necesitamos implementar
-            // un SaveChanges explícito, ya que las operaciones se ejecutan inmediatamente.
-            // Sin embargo, si en el futuro cambias a otra tecnología de base de datos,
-            // podrías implementar aquí la lógica para guardar todos los cambios pendientes.
-            await Task.CompletedTask;
+            // Supabase maneja automáticamente las operaciones, por lo que este método se deja vacío.
+            return Task.CompletedTask;
         }
     }
 }

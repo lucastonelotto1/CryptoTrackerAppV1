@@ -36,10 +36,11 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 
         public async Task RemoveFavoriteCrypto(Guid userId, string cryptoId)
         {
-            var response = await _supabaseClient
-                .From<FavoriteCryptos>()
-                .Where(x => x.UserId == userId && x.CryptoId == cryptoId)
-                .Delete();
+            await _supabaseClient
+             .From<FavoriteCryptos>()
+             .Where(x => x.UserId == userId && x.CryptoId == cryptoId)
+             .Delete();
+
         }
 
         public async Task<float> GetLimit(Guid userId, string cryptoId)

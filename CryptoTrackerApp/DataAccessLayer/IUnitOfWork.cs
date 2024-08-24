@@ -6,7 +6,10 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.DataAccessLayer
 {
-    internal class IUnitOfWork
+    public interface IUnitOfWork : IDisposable
     {
+        IUserRepository UserRepository { get; }
+        IAlertRepository AlertRepository { get; }
+        void Complete();
     }
 }

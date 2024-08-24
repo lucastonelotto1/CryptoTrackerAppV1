@@ -7,6 +7,17 @@ using CryptoTrackerApp.DataAccessLayer;
 using CryptoTrackerApp;
 
 
+public static class DatabaseHelper
+{
+    public static Supabase.Client CreateClient(DatabaseConfig config)
+    {
+        var client = new Supabase.Client(config.Url, config.Key);
+        client.InitializeAsync().Wait(); // Inicia el cliente de manera síncrona
+        return client;
+    }
+}
+
+/*
 public class DatabaseHelper : BaseModel
 {
     public Supabase.Client supabaseClient;
@@ -16,13 +27,18 @@ public class DatabaseHelper : BaseModel
 
         public DatabaseHelper(DatabaseConfig config)
         {
-            _repository = new Repository(config);
+        string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
+        var databaseConfig = DatabaseConfig.Load(configPath);
+
+        var databaseHelper = new DatabaseHelper(databaseConfig);
+        _repository = new Repository(config);
         supabaseClient = new Supabase.Client(url, key);
         supabaseClient.InitializeAsync().Wait();
     }
 
 
-        public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
+
+    public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
     {
         Guid userIdGuid;
         if (!Guid.TryParse(userId, out userIdGuid))
@@ -183,4 +199,4 @@ public class DatabaseHelper : BaseModel
     }
 
 }
-
+*/

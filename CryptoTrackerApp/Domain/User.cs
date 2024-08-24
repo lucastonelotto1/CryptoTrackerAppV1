@@ -1,29 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Supabase.Postgrest.Models;
+using System;
 
 namespace CryptoTrackerApp.Domain
 {
-    public partial class User
+    public partial class User : BaseModel
     {
+        // Propiedad Id requerida por Supabase
+        public Guid Id { get; set; }
+
         public string Nickname { get; set; } = null!;
         public string FirstName { get; set; } = null!;
         public string LastName { get; set; } = null!;
-
         public string Password { get; set; } = null!;
-
         public string Email { get; set; } = null!;
-
         public string FavoriteCryptos { get; set; }
-
         public double Threshold { get; set; }
-
         public bool ActiveSession { get; set; }
 
+        // Constructor sin parámetros
+        public User()
+        {
+        }
+
+        // Constructor con parámetros
         public User(string nickname, string firstName, string lastName, string password, string email, string favoriteCryptos, double threshold, bool activeSession)
         {
+            Id = Guid.NewGuid(); // Generar un nuevo Guid para Id
             Nickname = nickname;
             FirstName = firstName;
             LastName = lastName;
@@ -37,18 +39,7 @@ namespace CryptoTrackerApp.Domain
         public bool DoesCryptoExist(string crypto)
         {
             string[] cryptoArray = FavoriteCryptos.Split(' ');
-            bool exists = false;
-            int i = 0;
-            foreach (var c in cryptoArray)
-            {
-                if (c == crypto)
-                {
-                    exists = true;
-                    break;
-                }
-                i++;
-            }
-            return exists;
+            return cryptoArray.Contains(crypto);
         }
     }
 }

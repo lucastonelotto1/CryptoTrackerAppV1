@@ -54,14 +54,5 @@ public class UserRepository : IUserRepository
         throw new NotImplementedException();
     }
 
-    public Task AddUser(User user)
-    {
-        throw new NotImplementedException();
-    }
-
-    public Task UpdateUser(User user)
-    {
-        throw new NotImplementedException();
-    }
 }
 
