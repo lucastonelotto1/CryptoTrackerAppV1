@@ -1,0 +1,30 @@
+﻿using CryptoTrackerApp.DTO;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
+{
+    public class CryptoMapper
+    {
+        public static CryptoDTO MapToDTO(dynamic responseItem)
+        {
+            return new CryptoDTO(
+                responseItem.id.ToString(),
+                responseItem.rank.ToString(),
+                responseItem.symbol.ToString(),
+                responseItem.name.ToString(),
+                responseItem.supply.ToString(),
+                responseItem.maxSupply?.ToString(),
+                responseItem.marketCapUsd?.ToString(),
+                responseItem.volumeUsd24Hr?.ToString(),
+                decimal.Parse(responseItem.priceUsd),
+                decimal.Parse(responseItem.changePercent24Hr),
+                responseItem.vwap24Hr?.ToString(),
+                responseItem.explorer?.ToString()
+            );
+        }
+    }
+}
