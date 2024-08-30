@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CryptoTrackerApp.Domain;
+using Supabase.Interfaces;
 
 namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 {
@@ -17,7 +18,7 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             _supabaseClient = supabaseClient;
         }
 
-        public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(Guid userId)
+        public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
         {
             var response = await _supabaseClient
                 .From<FavoriteCryptos>()
@@ -27,14 +28,20 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             return response.Models;
         }
 
-        public async Task AddFavoriteCrypto(FavoriteCryptos favoriteCrypto)
+        public async Task AddFavoriteCrypto(string userId, string favoriteCrypto)
         {
+            var ss = new FavoriteCryptos
+            {
+                UserId = userId,
+                CryptoId = favoriteCrypto
+            };
+
             await _supabaseClient
-                .From<FavoriteCryptos>()
-                .Insert(favoriteCrypto);
+                 .From<FavoriteCryptos>()
+                    .Insert(ss);
         }
 
-        public async Task RemoveFavoriteCrypto(Guid userId, string cryptoId)
+        public async Task RemoveFavoriteCrypto(string userId, string cryptoId)
         {
             await _supabaseClient
              .From<FavoriteCryptos>()
@@ -43,7 +50,7 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 
         }
 
-        public async Task<float> GetLimit(Guid userId, string cryptoId)
+        public async Task<float> GetLimit(string userId, string cryptoId)
         {
             var response = await _supabaseClient
                 .From<FavoriteCryptos>()
@@ -54,7 +61,7 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             return response.Limit;
         }
 
-        public async Task UpdateLimit(Guid userId, string cryptoId, float newLimit)
+        public async Task UpdateLimit(string userId, string cryptoId, float newLimit)
         {
             await _supabaseClient
                 .From<FavoriteCryptos>()

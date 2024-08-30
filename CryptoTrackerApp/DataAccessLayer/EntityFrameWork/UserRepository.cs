@@ -10,7 +10,7 @@ public class UserRepository : IUserRepository
         _supabaseClient = supabaseClient;
     }
 
-    public async Task<User> GetUserById(Guid userId)
+    public async Task<User> GetUserById(string userId)
     {
         var response = await _supabaseClient
             .From<User>()
@@ -44,7 +44,7 @@ public class UserRepository : IUserRepository
             .Update(user);
     }
 
-    Task<User> IUserRepository.GetUserById(Guid userId)
+    Task<User> IUserRepository.GetUserById(string userId)
     {
         throw new NotImplementedException();
     }

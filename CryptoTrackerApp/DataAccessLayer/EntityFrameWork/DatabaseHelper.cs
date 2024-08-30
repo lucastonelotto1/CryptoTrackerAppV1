@@ -40,8 +40,8 @@ public class DatabaseHelper : BaseModel
 
     public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
     {
-        Guid userIdGuid;
-        if (!Guid.TryParse(userId, out userIdGuid))
+        string userIdGuid;
+        if (!string.TryParse(userId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -58,9 +58,9 @@ public class DatabaseHelper : BaseModel
         // Definir la lista para almacenar las alertas recientes
         List<AlertsHistory> recentAlerts = new List<AlertsHistory>();
 
-        // Convertir el userId de string a Guid
-        Guid userIdGuid;
-        if (!Guid.TryParse(userId, out userIdGuid))
+        // Convertir el userId de string a string
+        string userIdGuid;
+        if (!string.TryParse(userId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -97,8 +97,8 @@ public class DatabaseHelper : BaseModel
 
     public async Task AddFavoriteCrypto(string userId, string cryptoId)
     {
-        Guid userIdGuid;
-        if (!Guid.TryParse(userId, out userIdGuid))
+        string userIdGuid;
+        if (!string.TryParse(userId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -117,8 +117,8 @@ public class DatabaseHelper : BaseModel
 
     public async Task RemoveFavoriteCrypto(string userId, string cryptoId)
     {
-        Guid userIdGuid;
-        if (!Guid.TryParse(userId, out userIdGuid))
+        string userIdGuid;
+        if (!string.TryParse(userId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -145,8 +145,8 @@ public class DatabaseHelper : BaseModel
 
     public async Task <float> GetLimitDb(string UserId, string cryptoId) 
     {
-        Guid userIdGuid;
-        if (!Guid.TryParse(UserId, out userIdGuid))
+        string userIdGuid;
+        if (!string.TryParse(UserId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -163,9 +163,9 @@ public class DatabaseHelper : BaseModel
     public async Task UpdateLimitDb(float newLimit, string UserId ,string cryptoId)
     {
         var updates = new { Limit = newLimit };
-        Guid userIdGuid;
+        string userIdGuid;
 
-        if (!Guid.TryParse(UserId, out userIdGuid))
+        if (!string.TryParse(UserId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }
@@ -179,8 +179,8 @@ public class DatabaseHelper : BaseModel
 
     public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
     {
-        Guid userIdGuid;
-        if (!Guid.TryParse(userId, out userIdGuid))
+        string userIdGuid;
+        if (!string.TryParse(userId, out userIdGuid))
         {
             throw new Exception("Invalid user ID format.");
         }

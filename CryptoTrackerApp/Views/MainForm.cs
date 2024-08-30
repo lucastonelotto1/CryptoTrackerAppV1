@@ -305,8 +305,8 @@ namespace CryptoTrackerApp
 
             try
             {
-                Guid userIdGuid;
-                if (!Guid.TryParse(userId, out userIdGuid))
+                string userIdGuid;
+                if (!string.TryParse(userId, out userIdGuid))
                 {
                     MessageBox.Show("Invalid user ID format.");
                     return;

@@ -10,7 +10,7 @@ namespace CryptoTrackerApp.Classes
         public int Id { get; set; }
 
         [Column("UserId")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [Column("CryptoId")]
         public string CryptoId { get; set; }

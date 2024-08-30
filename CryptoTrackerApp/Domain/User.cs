@@ -6,7 +6,7 @@ namespace CryptoTrackerApp.Domain
     public partial class User : BaseModel
     {
         // Propiedad Id requerida por Supabase
-        public Guid Id { get; set; }
+        public string Id { get; set; }
 
         public string Nickname { get; set; } = null!;
         public string FirstName { get; set; } = null!;
@@ -25,7 +25,7 @@ namespace CryptoTrackerApp.Domain
         // Constructor con parámetros
         public User(string nickname, string firstName, string lastName, string password, string email, string favoriteCryptos, double threshold, bool activeSession)
         {
-            Id = Guid.NewGuid(); // Generar un nuevo Guid para Id
+            Id = string.NewGuid(); // Generar un nuevo string para Id
             Nickname = nickname;
             FirstName = firstName;
             LastName = lastName;

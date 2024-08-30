@@ -11,7 +11,7 @@ public class AlertRepository : IAlertRepository
         _supabaseClient = supabaseClient;
     }
 
-    public async Task<List<Alert>> GetRecentAlerts(Guid userId, DateTime cutoffDate)
+    public async Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate)
     {
         var response = await _supabaseClient
             .From<Alert>()
@@ -23,8 +23,15 @@ public class AlertRepository : IAlertRepository
             .ToList();
     }
 
-    public async Task AddAlert(Alert alert)
+    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
     {
+        var alert = new Alert
+        {
+            UserId = userId,
+            CryptoIdOutOfLimit = cryptoIdOutOfLimit,
+            ChangePercent = changePercent,
+            Time = time
+        };
         await _supabaseClient
             .From<Alert>()
             .Insert(alert);

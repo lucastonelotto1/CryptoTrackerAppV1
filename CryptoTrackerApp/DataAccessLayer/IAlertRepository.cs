@@ -2,6 +2,6 @@
 
 public interface IAlertRepository
 {
-    Task<List<Alert>> GetRecentAlerts(Guid userId, DateTime cutoffDate);
-    Task AddAlert(Alert alert);
+    Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate);
+    Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time);
 }

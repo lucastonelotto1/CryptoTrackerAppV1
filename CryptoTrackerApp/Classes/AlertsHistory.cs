@@ -9,7 +9,7 @@ namespace CryptoTrackerApp.Classes
         public int Id { get; set; }
 
         [Column("UserId")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [Column("CryptoIdOutOfLimit")]
         public string CryptoIdOutOfLimit { get; set; }

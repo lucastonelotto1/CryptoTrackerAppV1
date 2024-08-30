@@ -1,9 +1,6 @@
 ﻿using CryptoTrackerApp.DTO;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
 {
@@ -25,6 +22,24 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
                 responseItem.vwap24Hr?.ToString(),
                 responseItem.explorer?.ToString()
             );
+        }
+
+        public static List<CryptoAssetHistoryDTO> MapToCryptoAssetHistoryDTO(dynamic historyData)
+        {
+            var historyList = new List<CryptoAssetHistoryDTO>();
+
+            foreach (var responseItem in historyData.data)
+            {
+                decimal price = decimal.Parse(responseItem.priceUsd);
+                long time = responseItem.time;
+                DateTimeOffset offset = DateTimeOffset.FromUnixTimeMilliseconds(time);
+                DateTime convertedTime = offset.UtcDateTime.ToLocalTime();
+
+                var historyDTO = new CryptoAssetHistoryDTO(price, convertedTime);
+                historyList.Add(historyDTO);
+            }
+
+            return historyList;
         }
     }
 }
