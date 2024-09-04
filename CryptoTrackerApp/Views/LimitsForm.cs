@@ -1,25 +1,26 @@
 ﻿using Supabase.Gotrue;
 using NLog;
+using CryptoTrackerApp.DTO;
 
 namespace CryptoTrackerApp.Views
 {
     public partial class LimitsForm : Form
     {
         private string UserId;
-        private Session session;
+        private SessionDTO session;
         private string CryptoId;
         private Supabase.Client supabaseClient;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private DatabaseHelper databaseHelper;
 
 
-        public LimitsForm(Session session, string id)
+        public LimitsForm(SessionDTO session, string id)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Limits Form initialized.");
             InitializeComponent();
             this.session = session;
-            this.UserId = session.User.Id;
+            this.UserId = session.Id;
             this.CryptoId = id;
             databaseHelper = new DatabaseHelper();
 

@@ -2,22 +2,21 @@ using System;
 using System.Windows.Forms;
 using CryptoTrackerApp.Infrastructure;
 using NLog;
-using Supabase;
+using CryptoTrackerApp.DTO;
 
 namespace CryptoTrackerApp
 {
     public partial class LoginForm : Form
     {
-        private DatabaseHelper databaseHelper;
+        private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        public LoginForm()
+
+        public LoginForm(FacadeCT facadeCT)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Login Initialized.");
             InitializeComponent();
-
-            // Instances
-            databaseHelper = new DatabaseHelper();
+            _facadeCT = facadeCT;
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
@@ -27,15 +26,12 @@ namespace CryptoTrackerApp
 
             try
             {
-                var session = await databaseHelper.Authorize(email, password);
+                // Llamada al facade para manejar la autorización y la tarea en segundo plano
+                var sessionDTO = await _facadeCT.AuthorizeAndStartBackgroundTask(email, password);
 
-                if (session != null && session.AccessToken != null)
+                if (sessionDTO != null && sessionDTO.AccessToken != null)
                 {
-                    // Iniciar la tarea en segundo plano con la sesión
-                    TaskBackgroundService taskBackgroundMailService = new TaskBackgroundService();
-                    _ = taskBackgroundMailService.RunBackgroundTaskAsync(session);
-
-                    MainForm mainForm = new MainForm(session);
+                    MainForm mainForm = new MainForm(sessionDTO, _facadeCT);
                     mainForm.Show();
                     this.Hide();
                 }
@@ -47,10 +43,7 @@ namespace CryptoTrackerApp
             catch (Exception ex)
             {
                 Logger.Error("An error occurred: " + ex.Message);
-            }
-            finally
-            {
-                LogManager.Shutdown();
+                MessageBox.Show("An error occurred. Please try again later.");
             }
         }
 

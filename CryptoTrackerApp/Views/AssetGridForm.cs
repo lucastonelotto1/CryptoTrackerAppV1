@@ -3,76 +3,46 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Linq;
+using System.Windows.Forms;
 using CryptoTrackerApp.Classes;
 using Supabase.Gotrue;
 using NLog;
+using CryptoTrackerApp.DTO;
 
 namespace CryptoTrackerApp.Views
 {
-
     public partial class AssetGridForm : Form
     {
-        private CoinCapApiClient apiClient;
-        private DatabaseHelper databaseHelper;
-        private Session session;
+        private readonly FacadeCT _facadeCT;
+        private SessionDTO session;
         private MainForm mainForm;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private string userId;
 
-        
-
-
-        public AssetGridForm(Session session, MainForm mainForm)
+        public AssetGridForm(SessionDTO session, MainForm mainForm, FacadeCT facadeCT)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Assets Initialized.");
             this.mainForm = mainForm;
-            userId = session.User.Id;
+            this.userId = session.Id;
 
-            databaseHelper = new DatabaseHelper();
-            apiClient = new CoinCapApiClient();
-
+            // Instancia del Facade
+            _facadeCT = facadeCT;
 
             InitializeComponent();
             LoadDataAsync();
-
         }
 
         private async void LoadDataAsync()
         {
-            List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
-            List<string> cryptoIds = assets.Select(asset => asset.Symbol).ToList();
-
-            string[] idCryptoArray = new string[0];
             try
             {
+                // Obtener las criptomonedas no favoritas usando el Facade
+                List<CryptoDTO> nonFavoriteCryptos = await _facadeCT.GetNonFavoriteCryptos(userId);
 
-                var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
-
-                if (favoriteCryptos != null)
-                {
-                    idCryptoArray = favoriteCryptos.Select(x => x.CryptoId).ToArray();
-                }
-                else
-                {
-                    MessageBox.Show("No favorite cryptos found for this user.");
-                }
-            }
-            catch (Exception ex)
-            {
-                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
-                return;
-            }
-            finally
-            {
-                LogManager.Shutdown();
-            }
-
-            List<string> nonFavoriteIds = cryptoIds.Except(idCryptoArray).ToList();
-
-            foreach (var asset in assets)
-            {
-                if (nonFavoriteIds.Contains(asset.Symbol))
+                // Añadir las criptomonedas no favoritas al DataGridView
+                foreach (var asset in nonFavoriteCryptos)
                 {
                     dataGridView1.Rows.Add(
                         asset.Rank,
@@ -89,6 +59,14 @@ namespace CryptoTrackerApp.Views
                     );
                 }
             }
+            catch (Exception ex)
+            {
+                Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
+            }
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
         private async void btnAddCrypto_Click(object sender, EventArgs e)
@@ -103,18 +81,20 @@ namespace CryptoTrackerApp.Views
 
                 try
                 {
-
-                    var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
+                    // Usar el Facade para obtener las criptomonedas favoritas
+                    var favoriteCryptos = await _facadeCT.GetFavoriteCryptos(userId);
 
                     // Verifica si la criptomoneda seleccionada ya está en los favoritos del usuario
-                    if (favoriteCryptos != null && favoriteCryptos.Any(fc => fc.CryptoId == selectedCryptoId))
+                    if (favoriteCryptos.Any(fc => fc.Id == selectedCryptoId))
                     {
                         MessageBox.Show("Selected crypto is already in favorites.");
                         return;
                     }
-                        
-                    await databaseHelper.AddFavoriteCrypto(userId, selectedCryptoId);
+
+                    // Usar el Facade para añadir la criptomoneda a los favoritos
+                    await _facadeCT.AddFavoriteCrypto(userId, selectedCryptoId);
                     MessageBox.Show("Crypto added to favorites successfully.");
+
                     // Refresca los datos del DataGridView para reflejar el cambio
                     dataGridView1.Rows.Clear();
                     LoadDataAsync();
@@ -122,7 +102,6 @@ namespace CryptoTrackerApp.Views
                 catch (Exception ex)
                 {
                     Logger.Error("An error occurred while adding the crypto: " + ex.Message);
-                    return;
                 }
                 finally
                 {

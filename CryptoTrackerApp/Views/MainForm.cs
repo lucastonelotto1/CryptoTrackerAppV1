@@ -6,6 +6,8 @@ using CryptoTrackerApp.Views;
 using CryptoTracker.Views;
 using Supabase.Gotrue;
 using NLog;
+using CryptoTrackerApp.DTO;
+using CryptoTrackerApp.Domain;
 
 
 namespace CryptoTrackerApp
@@ -29,23 +31,21 @@ namespace CryptoTrackerApp
 
 
         // Instances
-        private CoinCapApiClient apiClient;
-        private DatabaseHelper databaseHelper;
-        private Session session;
+        private readonly FacadeCT _facadeCT;
+        private SessionDTO session;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private string userId;
 
-        public MainForm(Session session)
+        public MainForm(SessionDTO session, FacadeCT facadeCT)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Home Initialized.");
             InitializeComponent();
-            userId = session.User.Id;
+            userId = session.Id;
             this.session = session;
 
-            // Instances
-            databaseHelper = new DatabaseHelper();
-            apiClient = new CoinCapApiClient();
+            //instance
+            _facadeCT = facadeCT;
 
             // Data Loading
             LoadCryptoAssets();
@@ -294,54 +294,32 @@ namespace CryptoTrackerApp
         // Data Load
         private async void LoadCryptoAssets()
         {
-            List<CryptoAsset> assets = await apiClient.GetCryptoAssetsAsync();
-            List<string> cryptoIds = new List<string>();
-            List<string> idCryptoArray = new List<string>();
-
-            foreach (var asset in assets)
-            {
-                cryptoIds.Add(asset.Symbol);
-            }
-
             try
             {
-                string userIdGuid;
-                if (!string.TryParse(userId, out userIdGuid))
+                List<CryptoDTO> assets = await _facadeCT.GetFavoriteCryptos(userId);
+
+                dataGridViewCryptoAssets.Rows.Clear(); // Limpia la tabla antes de cargar los nuevos datos
+
+                foreach (var asset in assets)
                 {
-                    MessageBox.Show("Invalid user ID format.");
-                    return;
-                }
+                    string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
+                    string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
+                    string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
+                    string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
+                    string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
 
-                //throw new Exception("Prueba de excepción");
-                idCryptoArray = await GetFavoriteCryptoIds();
-
-                List<string> favoriteIds = cryptoIds.Intersect(idCryptoArray).ToList();
-
-                for (int i = 0; i < assets.Count; i++)
-                {
-                    var asset = assets[i];
-                    if (favoriteIds.Contains(asset.Symbol))
-                    {
-                        string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
-                        string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
-                        string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
-                        string formattedVwap24Hr = Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2");
-                        string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2");
-
-
-                        dataGridViewCryptoAssets.Rows.Add(
-                            asset.Rank,
-                            asset.Symbol,
-                            asset.Name,
-                            asset.Supply,
-                            formattedMarketCapUsd,
-                            formattedVolumeUsd24Hr,
-                            formattedPriceUsd,
-                            formattedChangePercent24Hr,
-                            formattedVwap24Hr,
-                            asset.Id
-                        );
-                    }
+                    dataGridViewCryptoAssets.Rows.Add(
+                        asset.Rank,
+                        asset.Symbol,
+                        asset.Name,
+                        asset.Supply,
+                        formattedMarketCapUsd,
+                        formattedVolumeUsd24Hr,
+                        formattedPriceUsd,
+                        formattedChangePercent24Hr,
+                        formattedVwap24Hr,
+                        asset.Id
+                    );
                 }
             }
             catch (Exception ex)
@@ -360,15 +338,13 @@ namespace CryptoTrackerApp
             try
             {
                 DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
-                var recentAlerts = await databaseHelper.GetRecentAlerts(userId, cutoffDate);
+                List<AlertsHistoryDTO> recentAlerts = await _facadeCT.GetRecentAlerts(userId, cutoffDate);
 
                 if (recentAlerts.Any())
                 {
                     dataGridViewAlerts.Rows.Clear();
                     foreach (var alert in recentAlerts)
                     {
-                        // Mostrar información de alerta para depuración
-
                         dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {alert.ChangePercent}%, at {alert.Time}");
                     }
                 }
@@ -392,7 +368,7 @@ namespace CryptoTrackerApp
         // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            AssetGridForm assetGridForm = new AssetGridForm(session, this);
+            AssetGridForm assetGridForm = new AssetGridForm(session, this, _facadeCT);
             assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();
@@ -429,11 +405,7 @@ namespace CryptoTrackerApp
 
                 try
                 {
-                    // Check user ID validity (already handled in DatabaseHelper)
-                    // Remove crypto from database using DatabaseHelper
-                    await databaseHelper.RemoveFavoriteCrypto(userId, selectedCryptoId);
-
-                    // Update DataGridView after successful removal
+                    await _facadeCT.RemoveFavoriteCrypto(userId, selectedCryptoId);
                     dataGridViewCryptoAssets.Rows.Clear();
                     LoadCryptoAssets();
 
@@ -453,7 +425,6 @@ namespace CryptoTrackerApp
                 MessageBox.Show("Please select a crypto asset to remove it from favorites.");
             }
         }
-
         private void btnLimits_Click(object sender, EventArgs e)
         {
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
@@ -469,47 +440,36 @@ namespace CryptoTrackerApp
             }
         }
 
-
         // Tasks
-        private async Task<List<string>> GetFavoriteCryptoIds()
-        {
-            var favoriteCryptos = await databaseHelper.GetFavoriteCryptos(userId);
-            return favoriteCryptos.Select(x => x.CryptoId).ToList();
-        }
         public async Task UpdateFavoriteCryptos()
         {
             try
             {
-                // Get crypto assets and favorite crypto IDs efficiently
-                var assets = await apiClient.GetCryptoAssetsAsync();
-                var favoriteCryptoIds = await GetFavoriteCryptoIds();
+                // Usar el Facade para obtener las criptomonedas favoritas
+                var favoriteCryptos = await _facadeCT.GetFavoriteCryptos(userId);
 
-                // Clear the DataGridView before populating
+                // Limpiar el DataGridView antes de rellenarlo
                 dataGridViewCryptoAssets.Rows.Clear();
 
-                // Efficiently iterate over assets and check for favorites
-                foreach (var asset in assets)
+                // Iterar sobre las criptomonedas favoritas y añadirlas al DataGridView
+                foreach (var crypto in favoriteCryptos)
                 {
-                    if (favoriteCryptoIds.Contains(asset.Symbol))
-                    {
-                        // Format prices and add data to DataGridView
-                        dataGridViewCryptoAssets.Rows.Add(
-                            asset.Rank,
-                            asset.Symbol,
-                            asset.Name,
-                            asset.Supply,
-                            Math.Round(Convert.ToDecimal(asset.MarketCapUsd), 2).ToString("F2"),
-                            Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2"),
-                            Math.Round(asset.PriceUsd, 2).ToString("F2"),
-                            Math.Round(asset.ChangePercent24Hr, 2).ToString("F3"),
-                            Math.Round(Convert.ToDecimal(asset.Vwap24Hr), 2).ToString("F2"),
-                            asset.Id
-                        );
-                    }
+                    dataGridViewCryptoAssets.Rows.Add(
+                        crypto.Rank,
+                        crypto.Symbol,
+                        crypto.Name,
+                        crypto.Supply,
+                        Math.Round(Convert.ToDecimal(crypto.MarketCapUsd), 2).ToString("F2"),
+                        Math.Round(Convert.ToDecimal(crypto.VolumeUsd24Hr), 2).ToString("F2"),
+                        Math.Round(crypto.PriceUsd, 2).ToString("F2"),
+                        Math.Round(crypto.ChangePercent24Hr, 2).ToString("F3"),
+                        Math.Round(Convert.ToDecimal(crypto.Vwap24Hr), 2).ToString("F2"),
+                        crypto.Id
+                    );
                 }
 
-                // Display message if no favorites are found (optional)
-                if (!favoriteCryptoIds.Any())
+                // Mostrar mensaje si no se encontraron favoritos (opcional)
+                if (!favoriteCryptos.Any())
                 {
                     MessageBox.Show("No favorite cryptos found for this user.");
                 }
@@ -517,7 +477,6 @@ namespace CryptoTrackerApp
             catch (Exception ex)
             {
                 Logger.Error("An error occurred while loading crypto assets: " + ex.Message);
-                return;
             }
             finally
             {

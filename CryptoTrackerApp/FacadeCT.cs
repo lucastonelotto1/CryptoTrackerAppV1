@@ -4,8 +4,10 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using CryptoTrackerApp.Api;
+using CryptoTrackerApp.Infrastructure;
 using System.Diagnostics.CodeAnalysis;
-
+using System.Linq;
+using CryptoTrackerApp.EmailService;
 
 namespace CryptoTrackerApp
 {
@@ -13,11 +15,13 @@ namespace CryptoTrackerApp
     {
         private readonly IRepository _repository;
         private readonly ICoinCapApiClient _cryptoApiClient;
+        private readonly IEmailService _emailService;
 
-        public FacadeCT(IRepository repository, ICoinCapApiClient cryptoApiClient)
+        public FacadeCT(IRepository repository, ICoinCapApiClient cryptoApiClient, IEmailService emailService)
         {
             _repository = repository;
             _cryptoApiClient = cryptoApiClient;
+            _emailService = emailService;
         }
 
         // Método para obtener criptomonedas favoritas
@@ -65,10 +69,10 @@ namespace CryptoTrackerApp
         }
 
         // Método para autorizar a un usuario
-        public async Task<SessionDTO> AuthorizeAsync(string email, string password)
+        public async Task<SessionDTO> Authorize(string email, string password)
         {
             var session = await _repository.Authorize(email, password);
-            return new SessionDTO(session.AccessToken, session.User.Id);
+            return new SessionDTO(session.AccessToken, session.User.Id, session.User.Email);
         }
 
         // Método para obtener el límite de una criptomoneda
@@ -105,10 +109,54 @@ namespace CryptoTrackerApp
             var history = _cryptoApiClient.Get6MonthHistoryFrom(cryptoId);
             return history.Select(h => new CryptoAssetHistoryDTO(h.PriceUsd, h.Date)
             {
-                // Si necesitas inicializar otras propiedades que no están en el constructor, lo haces aquí
                 VolumeUsd24Hr = h.VolumeUsd24Hr,
                 ChangePercent24Hr = h.ChangePercent24Hr
             }).ToList();
+        }
+
+        // Método para autorizar y ejecutar la tarea en segundo plano
+        public async Task<SessionDTO> AuthorizeAndStartBackgroundTask(string email, string password)
+        {
+            try
+            {
+                var session = await Authorize(email, password);
+
+                if (session != null && session.AccessToken != null)
+                {
+                    // Crear instancia de TaskBackgroundService con las dependencias necesarias
+                    var backgroundService = new TaskBackgroundService(
+                        (CoinCapApiClient)_cryptoApiClient,
+                        new DatabaseHelper(),  // Asegúrate de que DatabaseHelper se pueda instanciar aquí
+                        _emailService
+                    );
+
+                    // Inicia la tarea en segundo plano usando la sesión autorizada
+                    await backgroundService.RunBackgroundTaskAsync(session);
+                }
+
+                return session;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred during authorization: " + ex.Message, ex);
+            }
+        }
+
+        public async Task<List<CryptoDTO>> GetNonFavoriteCryptos(string userId)
+        {
+            // Obtener los criptoactivos desde la API
+            var assets = _cryptoApiClient.GetAllCryptosDTO();
+
+            // Obtener las criptomonedas favoritas usando el repositorio
+            var favoriteCryptos = await _repository.Cryptos.GetFavoriteCryptos(userId);
+            var favoriteCryptoIds = favoriteCryptos.Select(fc => fc.CryptoId).ToList();
+
+            // Filtrar las criptomonedas no favoritas
+            var nonFavoriteCryptos = assets
+                .Where(asset => !favoriteCryptoIds.Contains(asset.Id))
+                .ToList();
+
+            return nonFavoriteCryptos;
         }
     }
 }

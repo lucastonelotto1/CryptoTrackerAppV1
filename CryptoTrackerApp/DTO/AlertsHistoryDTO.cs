@@ -2,17 +2,17 @@
 {
     public class AlertsHistoryDTO
     {
-        public string CryptoId { get; set; }
+        public string CryptoIdOutOfLimit { get; set; }
         public string UserId { get; set; }
         public float ChangePercent { get; set; }
-        public string AlertTime { get; set; }
+        public string Time { get; set; }
 
-        public AlertsHistoryDTO(string cryptoId, string userId, float changePercent, string alertTime)
+        public AlertsHistoryDTO(string cryptoIdOutOfLimit, string userId, float changePercent, string time)
         {
-            CryptoId = cryptoId;
+            CryptoIdOutOfLimit = cryptoIdOutOfLimit;
             UserId = userId;
             ChangePercent = changePercent;
-            AlertTime = alertTime;
+            Time = time;
         }
     }
 }
