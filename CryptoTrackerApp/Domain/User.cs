@@ -25,7 +25,7 @@ namespace CryptoTrackerApp.Domain
         // Constructor con parámetros
         public User(string nickname, string firstName, string lastName, string password, string email, string favoriteCryptos, double threshold, bool activeSession)
         {
-            Id = string.NewGuid(); // Generar un nuevo string para Id
+           // Generar un nuevo string para Id
             Nickname = nickname;
             FirstName = firstName;
             LastName = lastName;

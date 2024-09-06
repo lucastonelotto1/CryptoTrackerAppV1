@@ -36,7 +36,7 @@ namespace CryptoTrackerApp
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private string userId;
 
-        public MainForm(SessionDTO session, FacadeCT facadeCT)
+        public MainForm(SessionDTO session)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Home Initialized.");
@@ -44,8 +44,7 @@ namespace CryptoTrackerApp
             userId = session.Id;
             this.session = session;
 
-            //instance
-            _facadeCT = facadeCT;
+
 
             // Data Loading
             LoadCryptoAssets();
@@ -368,7 +367,7 @@ namespace CryptoTrackerApp
         // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            AssetGridForm assetGridForm = new AssetGridForm(session, this, _facadeCT);
+            AssetGridForm assetGridForm = new AssetGridForm(session, this);
             assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();
@@ -431,7 +430,7 @@ namespace CryptoTrackerApp
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
-                LimitsForm changeLimitsForm = new LimitsForm(session, selectedCryptoId);
+                LimitsForm changeLimitsForm = new LimitsForm(session,selectedCryptoId);
                 changeLimitsForm.Show();
             }
             else

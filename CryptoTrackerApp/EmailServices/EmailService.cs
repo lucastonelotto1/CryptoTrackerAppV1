@@ -1,8 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using CryptoTrackerApp.EmailServices;
 using NLog;
 
 public class EmailService : IEmailService

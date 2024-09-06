@@ -7,11 +7,11 @@ namespace CryptoTrackerApp.Views
     public partial class LimitsForm : Form
     {
         private string UserId;
-        private SessionDTO session;
         private string CryptoId;
-        private Supabase.Client supabaseClient;
+
+        private SessionDTO session;
+        private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        private DatabaseHelper databaseHelper;
 
 
         public LimitsForm(SessionDTO session, string id)
@@ -22,7 +22,7 @@ namespace CryptoTrackerApp.Views
             this.session = session;
             this.UserId = session.Id;
             this.CryptoId = id;
-            databaseHelper = new DatabaseHelper();
+
 
 
             // Inicializar label y textbox con la posición inicial
@@ -39,7 +39,7 @@ namespace CryptoTrackerApp.Views
             try
             {
                 // Usa await para esperar el resultado del método asincrónico
-                var actualLimit = await databaseHelper.GetLimitDb(UserId, CryptoId);
+                var actualLimit = await _facadeCT.GetLimit(UserId, CryptoId);
 
                 // Convierte el resultado a string y lo asigna al TextBox
                 textBox1.Text = actualLimit.ToString();
@@ -77,7 +77,7 @@ namespace CryptoTrackerApp.Views
         {
            try
             {
-                await databaseHelper.UpdateLimitDb(newLimit, UserId, CryptoId);
+                await _facadeCT.UpdateLimit(newLimit, UserId, CryptoId);
             }
             catch (Exception ex)
             {

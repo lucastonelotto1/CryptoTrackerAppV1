@@ -1,5 +1,9 @@
 using CryptoTrackerApp.DataAccessLayer.EntityFrameWork;
 using CryptoTrackerApp;
+using CryptoTrackerApp.Api;
+using CryptoTrackerApp.EmailServices;
+using CryptoTrackerApp.DataAccessLayer;
+using Microsoft.Extensions.Configuration;
 
 namespace CryptoTrackerApp
 {
@@ -8,7 +12,6 @@ namespace CryptoTrackerApp
         [STAThread]
         static void Main()
         {
-
             // Ruta al archivo de configuración
             string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
 
@@ -18,17 +21,19 @@ namespace CryptoTrackerApp
             // Crear el cliente Supabase usando la configuración cargada
             var supabaseClient = DatabaseHelper.CreateClient(databaseConfig);
 
-            // Crear el repositorio principal y utilizarlo
-            var repository = new Repository(supabaseClient);
+            // Inicializa las dependencias
+            IRepository repository = new Repository(supabaseClient); // Implementación concreta
+            ICoinCapApiClient cryptoApiClient = new CoinCapApiClient(); // Implementación concreta
+            IEmailService emailService = new EmailService(); // Implementación concreta
 
-            
+            // Crear la fachada con las dependencias
+            FacadeCT facadeCT = new FacadeCT(repository, cryptoApiClient, emailService);
 
             // Inicializa la configuración de la aplicación
             ApplicationConfiguration.Initialize();
 
-            // Ejecuta el formulario principal de la aplicación
-            Application.Run(new LoginForm()); // O MainForm dependiendo de tu lógica
-
+            // Ejecuta el formulario principal de la aplicación, pasando la fachada como parámetro
+            Application.Run(new LoginForm(facadeCT));
         }
     }
 }

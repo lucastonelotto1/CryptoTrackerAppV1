@@ -1,5 +1,7 @@
 ﻿using System.Windows.Forms.DataVisualization.Charting;
+using CryptoTrackerApp;
 using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.DTO;
 using NLog;
 
 namespace CryptoTracker.Views
@@ -7,7 +9,7 @@ namespace CryptoTracker.Views
     public partial class DetailsForm : Form
     {
         private string cryptoId;
-        private static readonly CoinCapApiClient client = new CoinCapApiClient();
+        private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public DetailsForm(string cryptoId)
@@ -17,6 +19,8 @@ namespace CryptoTracker.Views
             InitializeComponent();
             this.cryptoId = cryptoId;
             LoadCryptoDetails();
+
+
         }
 
         private async void LoadCryptoDetails()
@@ -24,7 +28,7 @@ namespace CryptoTracker.Views
             try
             {
                 // Obtener detalles de la criptomoneda
-                var cryptoDetails = await client.GetCryptoAssetByIdAsync(cryptoId);
+                var cryptoDetails = await _facadeCT.GetCryptoDetailsAsync(cryptoId);
 
                 string formattedPriceUsd = Math.Round(cryptoDetails.PriceUsd, 2).ToString("F2");
                 string formattedChangePercent24Hr = Math.Round(cryptoDetails.ChangePercent24Hr, 2).ToString("F3");
@@ -33,10 +37,10 @@ namespace CryptoTracker.Views
                 string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(cryptoDetails.MarketCapUsd), 2).ToString("F2");
                 
                 
-                dataGridViewDetails.DataSource = new List<CryptoAsset> { cryptoDetails };
+                dataGridViewDetails.DataSource = new List<CryptoDTO> { cryptoDetails };
 
                 // Obtener y mostrar los datos de la evolución del precio
-                var historyData = await client.GetCryptoAssetHistoryAsync(cryptoId);
+                var historyData = await _facadeCT.GetCryptoHistoryAsync(cryptoId);
 
                 // Inicializar la serie del Chart
                 var series = new Series
@@ -55,11 +59,11 @@ namespace CryptoTracker.Views
                 // Llenar el Chart con los datos de la evolución del precio
                 foreach (var price in historyData)
                 {
-                    DateTime date = DateTimeOffset.FromUnixTimeMilliseconds(price.Time).DateTime;
+                    DateTime date = price.Date;  //DateTimeOffset.FromUnixTimeMilliseconds(price.Date).DateTime;
                     decimal priceValue = price.PriceUsd;
                     minPrice = Math.Floor(Math.Min(minPrice, priceValue)); // Encontrar el precio mínimo
                     string formattedPriceUsd2 = Math.Round(priceValue, 2).ToString("C2");
-                    series.Points.AddXY(date, formattedPriceUsd2);
+                    series.Points.AddXY(date,formattedPriceUsd2);
                 }
 
                 // Ajustar el eje Y para que comience en el precio mínimo

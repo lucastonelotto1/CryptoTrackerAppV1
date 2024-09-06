@@ -3,12 +3,14 @@ using System.Windows.Forms;
 using CryptoTrackerApp.Infrastructure;
 using NLog;
 using CryptoTrackerApp.DTO;
+using CryptoTrackerApp.DataAccessLayer.EntityFrameWork;
 
 namespace CryptoTrackerApp
 {
     public partial class LoginForm : Form
     {
-        private readonly FacadeCT _facadeCT;
+        public readonly FacadeCT _facadeCT;
+
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
         public LoginForm(FacadeCT facadeCT)
@@ -17,10 +19,12 @@ namespace CryptoTrackerApp
             Logger.Info("Login Initialized.");
             InitializeComponent();
             _facadeCT = facadeCT;
+
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
+
             var email = txtUsername.Text;
             var password = txtPassword.Text;
 
@@ -31,7 +35,7 @@ namespace CryptoTrackerApp
 
                 if (sessionDTO != null && sessionDTO.AccessToken != null)
                 {
-                    MainForm mainForm = new MainForm(sessionDTO, _facadeCT);
+                    MainForm mainForm = new MainForm(sessionDTO);
                     mainForm.Show();
                     this.Hide();
                 }

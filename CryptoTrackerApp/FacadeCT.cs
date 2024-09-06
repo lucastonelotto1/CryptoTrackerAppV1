@@ -1,13 +1,13 @@
 ﻿using CryptoTrackerApp.DTO;
 using CryptoTrackerApp.DataAccessLayer;
+using CryptoTrackerApp.Api;
+using CryptoTrackerApp.EmailServices;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using CryptoTrackerApp.Api;
-using CryptoTrackerApp.Infrastructure;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using CryptoTrackerApp.EmailService;
+using System.Threading.Tasks;
+using CryptoTrackerApp.Infrastructure;
+using CryptoTrackerApp.Classes;
 
 namespace CryptoTrackerApp
 {
@@ -23,34 +23,30 @@ namespace CryptoTrackerApp
             _cryptoApiClient = cryptoApiClient;
             _emailService = emailService;
         }
-
         // Método para obtener criptomonedas favoritas
         public async Task<List<CryptoDTO>> GetFavoriteCryptos(string userId)
         {
-            // Obtener las criptomonedas favoritas del usuario desde el repositorio
-            var favoriteCryptosIds = await _repository.Cryptos.GetFavoriteCryptos(userId);
+            var favoriteCryptos = await _repository.Cryptos.GetFavoriteCryptos(userId);
+            var favoriteCryptosFromApi = _cryptoApiClient.GetFavCryptosDTO(favoriteCryptos);   
+            return favoriteCryptosFromApi;    
+        }
 
-            // Utilizar el cliente API para obtener los detalles de las criptomonedas favoritas
-            var favoriteCryptos = _cryptoApiClient.GetFavCryptosDTO(favoriteCryptosIds);
-
-            return favoriteCryptos;
+        public async Task<List<FavoriteCryptos>> GetFavoriteCryptosFromDb(string userId)
+        {
+            var favoriteCryptosFromDb = await _repository.Cryptos.GetFavoriteCryptos(userId);
+            return favoriteCryptosFromDb;
         }
 
         // Método para obtener alertas recientes
         public async Task<List<AlertsHistoryDTO>> GetRecentAlerts(string userId, DateTime cutoffDate)
         {
             var alerts = await _repository.Alerts.GetRecentAlerts(userId, cutoffDate);
-            var alertDTOs = new List<AlertsHistoryDTO>();
-
-            foreach (var alert in alerts)
-            {
-                alertDTOs.Add(new AlertsHistoryDTO(
-                    alert.CryptoIdOutOfLimit,
-                    alert.UserId,
-                    alert.ChangePercent,
-                    alert.Time
-                ));
-            }
+            var alertDTOs = alerts.Select(alert => new AlertsHistoryDTO(
+                alert.CryptoIdOutOfLimit,
+                alert.UserId,
+                alert.ChangePercent,
+                alert.Time
+            )).ToList();
             return alertDTOs;
         }
 
@@ -98,8 +94,7 @@ namespace CryptoTrackerApp
         // Método para obtener el precio de una criptomoneda desde la API
         public async Task<CryptoDTO> GetCryptoDetailsAsync(string cryptoId)
         {
-            var cryptoDetails = _cryptoApiClient.GetAllCryptosDTO()
-                                                .Find(crypto => crypto.Id == cryptoId);
+            var cryptoDetails = _cryptoApiClient.GetAllCryptosDTO().Find(crypto => crypto.Id == cryptoId);
             return cryptoDetails;
         }
 
@@ -114,6 +109,40 @@ namespace CryptoTrackerApp
             }).ToList();
         }
 
+        // Método para monitorear cambios de criptomonedas y enviar alertas
+        public async Task MonitorCryptoChangesAsync(string userId, string email, string name)
+        {
+            // Obtener las criptomonedas favoritas del usuario
+            var favoriteCryptos = await GetFavoriteCryptosFromDb(userId);  //Todas las criptomonedas favoritas del usuario con la info de la API 
+
+            // Obtener todos los criptoactivos desde la API
+            List<CryptoDTO> cryptoAssets = _cryptoApiClient.GetAllCryptosDTO();
+
+            foreach (var favorite in favoriteCryptos)
+            {
+                var matchingCrypto = cryptoAssets.FirstOrDefault(c => c.Symbol == favorite.CryptoId);
+                if (matchingCrypto != null)
+                {
+                    float changePercent24Hr = Math.Abs((float)matchingCrypto.ChangePercent24Hr);
+
+                    if (changePercent24Hr > favorite.Limit)
+                    {
+                        // Enviar correo si el cambio de precio excede el límite
+                        await _emailService.SendEmailAsync(
+                            email,
+                            name,
+                            $"The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.",
+                            $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
+                        );
+
+                        // Guardar la alerta en el repositorio
+                        string argentinaTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
+                        await AddAlert(userId, matchingCrypto.Name, changePercent24Hr, argentinaTime);
+                    }
+                }
+            }
+        }
+
         // Método para autorizar y ejecutar la tarea en segundo plano
         public async Task<SessionDTO> AuthorizeAndStartBackgroundTask(string email, string password)
         {
@@ -124,11 +153,7 @@ namespace CryptoTrackerApp
                 if (session != null && session.AccessToken != null)
                 {
                     // Crear instancia de TaskBackgroundService con las dependencias necesarias
-                    var backgroundService = new TaskBackgroundService(
-                        (CoinCapApiClient)_cryptoApiClient,
-                        new DatabaseHelper(),  // Asegúrate de que DatabaseHelper se pueda instanciar aquí
-                        _emailService
-                    );
+                    var backgroundService = new TaskBackgroundService(_emailService, this);
 
                     // Inicia la tarea en segundo plano usando la sesión autorizada
                     await backgroundService.RunBackgroundTaskAsync(session);
@@ -142,16 +167,13 @@ namespace CryptoTrackerApp
             }
         }
 
+        // Método para obtener las criptomonedas no favoritas
         public async Task<List<CryptoDTO>> GetNonFavoriteCryptos(string userId)
         {
-            // Obtener los criptoactivos desde la API
             var assets = _cryptoApiClient.GetAllCryptosDTO();
-
-            // Obtener las criptomonedas favoritas usando el repositorio
             var favoriteCryptos = await _repository.Cryptos.GetFavoriteCryptos(userId);
             var favoriteCryptoIds = favoriteCryptos.Select(fc => fc.CryptoId).ToList();
 
-            // Filtrar las criptomonedas no favoritas
             var nonFavoriteCryptos = assets
                 .Where(asset => !favoriteCryptoIds.Contains(asset.Id))
                 .ToList();
