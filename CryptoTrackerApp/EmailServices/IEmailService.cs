@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 
 namespace CryptoTrackerApp.EmailServices
 {
-        public interface IEmailService
-        {
-            Task SendEmailAsync(string toEmail, string toName, string plainTextContent, string htmlContent);
-        }
+    public interface IEmailService
+    {
+        Task SendEmailAsync(string toEmail, string toName, string plainTextContent, string htmlContent);
+    }
 }
+

@@ -33,9 +33,9 @@ namespace CryptoTrackerApp
                 // Llamada al facade para manejar la autorización y la tarea en segundo plano
                 var sessionDTO = await _facadeCT.AuthorizeAndStartBackgroundTask(email, password);
 
-                if (sessionDTO != null && sessionDTO.AccessToken != null)
+                if (sessionDTO != null)
                 {
-                    MainForm mainForm = new MainForm(sessionDTO);
+                    MainForm mainForm = new MainForm(_facadeCT,sessionDTO);
                     mainForm.Show();
                     this.Hide();
                 }

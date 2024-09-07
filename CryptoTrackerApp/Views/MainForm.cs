@@ -36,14 +36,14 @@ namespace CryptoTrackerApp
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private string userId;
 
-        public MainForm(SessionDTO session)
+        public MainForm(FacadeCT facadeCT,SessionDTO session)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Home Initialized.");
             InitializeComponent();
             userId = session.Id;
             this.session = session;
-
+            _facadeCT = facadeCT;
 
 
             // Data Loading
@@ -296,11 +296,17 @@ namespace CryptoTrackerApp
             try
             {
                 List<CryptoDTO> assets = await _facadeCT.GetFavoriteCryptos(userId);
+                MessageBox.Show ($"{userId}");
+                MessageBox.Show($"Number of favorite cryptos loaded: {assets.Count}");
+                string cryptoNames = string.Join(", ", assets.Select(a => a.Name));
+                MessageBox.Show($"Favorite cryptos loaded: {cryptoNames}");
 
                 dataGridViewCryptoAssets.Rows.Clear(); // Limpia la tabla antes de cargar los nuevos datos
 
                 foreach (var asset in assets)
                 {
+                    MessageBox.Show("Entró al foreach");
+
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
                     string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
                     string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
@@ -367,7 +373,7 @@ namespace CryptoTrackerApp
         // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)
         {
-            AssetGridForm assetGridForm = new AssetGridForm(session, this);
+            AssetGridForm assetGridForm = new AssetGridForm(_facadeCT,session, this);
             assetGridForm.FormClosed += AssetGridForm_FormClosed; // Evento para actualizar los datos al cerrar el formulario
             assetGridForm.Show();
             this.Hide();

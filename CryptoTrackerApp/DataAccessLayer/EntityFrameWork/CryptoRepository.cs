@@ -18,8 +18,10 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             _supabaseClient = supabaseClient;
         }
 
-        public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
+        public async Task <List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
         {
+
+
             var response = await _supabaseClient
                 .From<FavoriteCryptos>()
                 .Where(x => x.UserId == userId)

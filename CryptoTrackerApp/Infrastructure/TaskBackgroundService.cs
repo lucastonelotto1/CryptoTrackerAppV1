@@ -1,5 +1,5 @@
 ﻿using CryptoTrackerApp.DTO;
-using CryptoTrackerApp.EmailService;
+using CryptoTrackerApp.EmailServices;
 using NLog;
 
 namespace CryptoTrackerApp.Infrastructure

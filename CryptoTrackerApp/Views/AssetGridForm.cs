@@ -20,12 +20,13 @@ namespace CryptoTrackerApp.Views
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
         private string userId;
 
-        public AssetGridForm(SessionDTO session, MainForm mainForm)
+        public AssetGridForm(FacadeCT facadeCT, SessionDTO session, MainForm mainForm)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Assets Initialized.");
             this.mainForm = mainForm;
             this.userId = session.Id;
+            _facadeCT = facadeCT;
 
 
             InitializeComponent();

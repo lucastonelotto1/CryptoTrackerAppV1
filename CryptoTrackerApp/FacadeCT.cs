@@ -27,7 +27,9 @@ namespace CryptoTrackerApp
         public async Task<List<CryptoDTO>> GetFavoriteCryptos(string userId)
         {
             var favoriteCryptos = await _repository.Cryptos.GetFavoriteCryptos(userId);
-            var favoriteCryptosFromApi = _cryptoApiClient.GetFavCryptosDTO(favoriteCryptos);   
+            var favoriteCryptosFromApi =  _cryptoApiClient.GetFavCryptosDTO(favoriteCryptos);  
+            MessageBox.Show("Cantidad de Api: " + favoriteCryptosFromApi.Count);
+            MessageBox.Show("Cantidad de Db " + favoriteCryptos.Count);
             return favoriteCryptosFromApi;    
         }
 
