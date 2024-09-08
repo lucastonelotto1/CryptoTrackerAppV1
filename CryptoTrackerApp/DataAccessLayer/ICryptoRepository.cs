@@ -7,4 +7,5 @@ public interface ICryptoRepository
     Task RemoveFavoriteCrypto(string userId, string cryptoId);
     Task<float> GetLimit(string userId, string cryptoId);
     Task UpdateLimit(string userId, string cryptoId, float newLimit);
+
 }

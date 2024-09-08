@@ -81,7 +81,7 @@ namespace CryptoTrackerApp.Views
                 try
                 {
                     // Usar el Facade para obtener las criptomonedas favoritas
-                    var favoriteCryptos = await _facadeCT.GetFavoriteCryptos(userId);
+                    var favoriteCryptos = await _facadeCT.GetFavoriteCryptosId(userId);
 
                     // Verifica si la criptomoneda seleccionada ya está en los favoritos del usuario
                     if (favoriteCryptos.Any(fc => fc.Id == selectedCryptoId))

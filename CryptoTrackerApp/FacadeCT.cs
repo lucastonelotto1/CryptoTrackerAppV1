@@ -24,12 +24,11 @@ namespace CryptoTrackerApp
             _emailService = emailService;
         }
         // Método para obtener criptomonedas favoritas
-        public async Task<List<CryptoDTO>> GetFavoriteCryptos(string userId)
+        public async Task<List<CryptoDTO>> GetFavoriteCryptosId(string userId)
         {
             var favoriteCryptos = await _repository.Cryptos.GetFavoriteCryptos(userId);
-            var favoriteCryptosFromApi =  _cryptoApiClient.GetFavCryptosDTO(favoriteCryptos);  
-            MessageBox.Show("Cantidad de Api: " + favoriteCryptosFromApi.Count);
-            MessageBox.Show("Cantidad de Db " + favoriteCryptos.Count);
+            var favoriteCryptosFromApi =  _cryptoApiClient.GetFavCryptosDTO(favoriteCryptos);
+
             return favoriteCryptosFromApi;    
         }
 

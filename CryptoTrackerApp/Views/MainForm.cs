@@ -295,7 +295,7 @@ namespace CryptoTrackerApp
         {
             try
             {
-                List<CryptoDTO> assets = await _facadeCT.GetFavoriteCryptos(userId);
+                List<CryptoDTO> assets = await _facadeCT.GetFavoriteCryptosId(userId);
                 MessageBox.Show ($"{userId}");
                 MessageBox.Show($"Number of favorite cryptos loaded: {assets.Count}");
                 string cryptoNames = string.Join(", ", assets.Select(a => a.Name));
@@ -451,7 +451,7 @@ namespace CryptoTrackerApp
             try
             {
                 // Usar el Facade para obtener las criptomonedas favoritas
-                var favoriteCryptos = await _facadeCT.GetFavoriteCryptos(userId);
+                var favoriteCryptos = await _facadeCT.GetFavoriteCryptosId(userId);
 
                 // Limpiar el DataGridView antes de rellenarlo
                 dataGridViewCryptoAssets.Rows.Clear();

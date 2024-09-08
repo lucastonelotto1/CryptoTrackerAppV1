@@ -1,4 +1,5 @@
-﻿using Supabase.Gotrue;
+﻿using CryptoTrackerApp.Classes;
+using Supabase.Gotrue;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,21 +13,18 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
         private readonly Supabase.Client _supabaseClient;
 
         public IAlertRepository Alerts { get; }
-        public IUserRepository Users { get; }
         public ICryptoRepository Cryptos { get; }
 
         public Repository(Supabase.Client supabaseClient)
         {
             _supabaseClient = supabaseClient;
-            Alerts = new AlertRepository(_supabaseClient);
-            Users = new UserRepository(_supabaseClient);
-            Cryptos = new CryptoRepository(_supabaseClient);
+            Alerts = new AlertRepository();
+            Cryptos = new CryptoRepository();
             
         }
 
         public async Task<Session> Authorize(string email, string password)
         {
-            MessageBox.Show("Hola desde authorize");
             return await _supabaseClient.Auth.SignIn(email, password);
         }
 
@@ -35,5 +33,6 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             // Supabase maneja automáticamente las operaciones, por lo que este método se deja vacío.
             return Task.CompletedTask;
         }
+
     }
 }

@@ -15,6 +15,9 @@ namespace CryptoTrackerApp
         [STAThread]
         static void Main()
         {
+            // Inicializa la configuración de la aplicación
+            ApplicationConfiguration.Initialize();
+
             // Crear el cliente Supabase usando la configuración cargada
             var supabaseClient = DatabaseHelper.CreateClient();
 
@@ -34,8 +37,7 @@ namespace CryptoTrackerApp
             // Crear la fachada con las dependencias
             FacadeCT facadeCT = new FacadeCT(repository, cryptoApiClient, emailService);
 
-            // Inicializa la configuración de la aplicación
-            ApplicationConfiguration.Initialize();
+
 
             // Ejecuta el formulario principal de la aplicación
             Application.Run(new LoginForm(facadeCT));

@@ -30,19 +30,28 @@ public class CoinCapApiClient : ICoinCapApiClient
     public List<CryptoDTO> GetFavCryptosDTO(List<FavoriteCryptos> favoriteList)
     {
         var list = new List<CryptoDTO>();
+
         foreach (var item in favoriteList)
         {
             foreach (var responseItem in dataAccessor.data)
             {
-                if (item == responseItem.id.ToString())
+
+                if (item.CryptoId == responseItem.symbol.ToString())
                 {
-                    var objectDTO = CryptoMapper.MapToDTO(responseItem);
-                    list.Add(objectDTO);
+                    //var objectDTO = CryptoMapper.MapToDTO(responseItem);
+                    list.Add(responseItem);
+                }
+                else
+                {
+                    MessageBox.Show($"Comparamos db {item.CryptoId} | api {responseItem.symbol}");
                 }
             }
         }
+        MessageBox.Show($"Cantidad de elementos en la lista final: {list.Count}");
+
         return list;
     }
+
 
     public List<CryptoDTO> GetAllCryptosDTO()
     {
