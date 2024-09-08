@@ -15,14 +15,8 @@ namespace CryptoTrackerApp
         [STAThread]
         static void Main()
         {
-            // Ruta al archivo de configuración
-            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.txt");
-
-            // Cargar la configuración desde el archivo
-            var databaseConfig = DatabaseConfig.Load(configPath);
-
             // Crear el cliente Supabase usando la configuración cargada
-            var supabaseClient = DatabaseHelper.CreateClient(databaseConfig);
+            var supabaseClient = DatabaseHelper.CreateClient();
 
 
             // Cargar la configuración desde el archivo appsettings.json

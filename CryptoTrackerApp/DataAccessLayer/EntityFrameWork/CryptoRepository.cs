@@ -13,22 +13,23 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
     {
         private readonly Supabase.Client _supabaseClient;
 
+
+
         public CryptoRepository(Supabase.Client supabaseClient)
         {
             _supabaseClient = supabaseClient;
         }
 
-        public async Task <List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
+        public async Task<List<FavoriteCryptos>> GetFavoriteCryptos(string userId)
         {
-
-
             var response = await _supabaseClient
                 .From<FavoriteCryptos>()
                 .Where(x => x.UserId == userId)
                 .Get();
-
+          
             return response.Models;
         }
+
 
         public async Task AddFavoriteCrypto(string userId, string favoriteCrypto)
         {

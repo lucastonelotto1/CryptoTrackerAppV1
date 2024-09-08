@@ -21,10 +21,12 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             Alerts = new AlertRepository(_supabaseClient);
             Users = new UserRepository(_supabaseClient);
             Cryptos = new CryptoRepository(_supabaseClient);
+            
         }
 
         public async Task<Session> Authorize(string email, string password)
         {
+            MessageBox.Show("Hola desde authorize");
             return await _supabaseClient.Auth.SignIn(email, password);
         }
 
