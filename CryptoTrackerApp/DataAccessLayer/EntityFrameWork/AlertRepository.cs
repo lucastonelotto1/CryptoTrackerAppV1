@@ -19,12 +19,12 @@ public class AlertRepository : IAlertRepository
         _supabaseClient.InitializeAsync().Wait();
     }
 
-    public async Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate)
+    public async Task<List<AlertsHistory>> GetRecentAlerts(string userId, DateTime cutoffDate)
     {
         
         // Obtener todas las alertas de Supabase para el usuario
         var response = await _supabaseClient
-            .From<Alert>()
+            .From<AlertsHistory>()
             .Where(x => x.UserId == userId)
             .Get();
 
@@ -37,7 +37,7 @@ public class AlertRepository : IAlertRepository
     }
 
 
-    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
+    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, string changePercent, string time)
     {
         var alert = new AlertsHistory
         {

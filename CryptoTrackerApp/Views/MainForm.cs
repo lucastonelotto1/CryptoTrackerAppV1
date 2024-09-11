@@ -48,7 +48,7 @@ namespace CryptoTrackerApp
 
             // Data Loading
             LoadCryptoAssets();
-            //LoadAlerts();
+            LoadAlerts();
         }
 
         // Designer
@@ -258,7 +258,7 @@ namespace CryptoTrackerApp
             dataGridViewAlerts.ReadOnly = true;
             dataGridViewAlerts.RowHeadersVisible = false;
             dataGridViewAlerts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
-            dataGridViewAlerts.Size = new Size(257, 384);
+            dataGridViewAlerts.Size = new Size(456, 384);
             dataGridViewAlerts.TabIndex = 6;
             // 
             // AlertHistory
@@ -271,7 +271,7 @@ namespace CryptoTrackerApp
             // MainForm
             // 
             BackColor = Color.FromArgb(0, 18, 30);
-            ClientSize = new Size(1319, 479);
+            ClientSize = new Size(1518, 479);
             Controls.Add(dataGridViewAlerts);
             Controls.Add(btnLimits);
             Controls.Add(btnRemoveCrypto);
@@ -284,6 +284,7 @@ namespace CryptoTrackerApp
             ((ISupportInitialize)dataGridViewAlerts).EndInit();
             ResumeLayout(false);
         }
+
         private DataGridView dataGridViewCryptoAssets;
         private Button btnViewDetails;
         private Button btnRemoveCrypto;
@@ -330,13 +331,12 @@ namespace CryptoTrackerApp
                 LogManager.Shutdown();
             }
         }
-/*
         private async void LoadAlerts()
         {
             try
             {
                 DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
-                List<Alert> recentAlerts = await _facadeCT.GetRecentAlerts(userId, cutoffDate);
+                List<AlertsHistory> recentAlerts = await _facadeCT.GetRecentAlerts(userId, cutoffDate);
 
                 if (recentAlerts.Any())
                 {
@@ -361,7 +361,7 @@ namespace CryptoTrackerApp
                 LogManager.Shutdown();
             }
         }
-*/
+
 
         // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)

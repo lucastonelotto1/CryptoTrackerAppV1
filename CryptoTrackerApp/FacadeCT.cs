@@ -11,6 +11,7 @@ using CryptoTrackerApp.Classes;
 using CryptoTrackerApp.Domain;
 using System.Threading;
 using CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping;
+using System.Globalization;
 
 namespace CryptoTrackerApp
 {
@@ -42,7 +43,7 @@ namespace CryptoTrackerApp
         }
 
         // Método para obtener alertas recientes
-        public async Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate)
+        public async Task<List<AlertsHistory>> GetRecentAlerts(string userId, DateTime cutoffDate)
         {
             var alerts = await _repository.Alerts.GetRecentAlerts(userId, cutoffDate);
             return alerts;
@@ -65,9 +66,7 @@ namespace CryptoTrackerApp
         // Método para autorizar a un usuario
         public async Task<SessionDTO> Authorize(string email, string password)
         {
-            MessageBox.Show("PRE AUTH");
             var session = await _repository.Authorize(email, password);
-            MessageBox.Show("POST AUTH");
             return new SessionDTO(session.AccessToken, session.User.Id, session.User.Email);
         }
 
@@ -85,7 +84,7 @@ namespace CryptoTrackerApp
         }
 
         // Método para agregar una alerta
-        public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
+        public async Task AddAlert(string userId, string cryptoIdOutOfLimit, string changePercent, string time)
         {
             await _repository.Alerts.AddAlert(userId, cryptoIdOutOfLimit, changePercent, time);
             await _repository.SaveChangesAsync();
@@ -106,7 +105,7 @@ namespace CryptoTrackerApp
             return history;
         }
 
-        // Método para monitorear cambios de criptomonedas y enviar alertas
+        // Método para monitorear los cambios en las criptomonedas
         public async Task MonitorCryptoChangesAsync(string userId, string email, string name)
         {
             var favoriteCryptos = await GetFavoriteCryptosFromDb(userId);
@@ -119,23 +118,36 @@ namespace CryptoTrackerApp
                 var matchingCrypto = cryptoAssets.FirstOrDefault(c => c.Symbol == favorite.CryptoId);
                 if (matchingCrypto != null)
                 {
-                    float changePercent24Hr = Math.Abs((float)matchingCrypto.ChangePercent24Hr);
+                    // Convertir el valor decimal a double explícitamente
+                    double originalChangePercent24Hr = (double)matchingCrypto.ChangePercent24Hr;
 
-                    if (changePercent24Hr > favorite.Limit)
+                    // Usar el valor absoluto para la comparación con el límite
+                    double absoluteChangePercent24Hr = Math.Abs(originalChangePercent24Hr);
+
+                    if (absoluteChangePercent24Hr > favorite.Limit)
                     {
+                        // Enviar el valor original sin modificar en el correo electrónico
                         await _emailService.SendEmailAsync(
                             email,
                             name,
-                            $"The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.",
-                            $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
+                            $"The cryptocurrency {matchingCrypto.Name} has changed by {originalChangePercent24Hr.ToString("F2", CultureInfo.InvariantCulture)}% in the last 24 hours.",
+                            $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {originalChangePercent24Hr.ToString("F2", CultureInfo.InvariantCulture)}% in the last 24 hours.</h1>"
                         );
 
+                        // Convertir el valor original a cadena con coma antes de guardarlo en Supabase
+                        string formattedChangePercent = originalChangePercent24Hr.ToString("F2", CultureInfo.InvariantCulture).Replace('.', ',');
+
+                        // Guardar el valor original sin modificar en la alerta
                         string argentinaTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                        await AddAlert(userId, matchingCrypto.Name, changePercent24Hr, argentinaTime);
+                        await AddAlert(userId, matchingCrypto.Name, formattedChangePercent, argentinaTime);
                     }
                 }
             }
         }
+
+
+
+
 
 
         // Método para autorizar y ejecutar la tarea en segundo plano
@@ -153,7 +165,6 @@ namespace CryptoTrackerApp
                     // Inicia la tarea en segundo plano usando la sesión autorizada
                     Task.Run(async () => await backgroundService.RunBackgroundTaskAsync(session));
 
-                    MessageBox.Show("Despues de la llamada al backgroundService en Facade");
                 }
 
                 return session;
