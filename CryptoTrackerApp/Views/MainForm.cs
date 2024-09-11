@@ -336,7 +336,7 @@ namespace CryptoTrackerApp
             try
             {
                 DateTime cutoffDate = DateTime.UtcNow.AddDays(-6);
-                List<AlertsHistoryDTO> recentAlerts = await _facadeCT.GetRecentAlerts(userId, cutoffDate);
+                List<Alert> recentAlerts = await _facadeCT.GetRecentAlerts(userId, cutoffDate);
 
                 if (recentAlerts.Any())
                 {
@@ -379,8 +379,10 @@ namespace CryptoTrackerApp
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 if (selectedRow.Cells["dataGridViewTextBoxColumn2"].Value != null) // Verifica que la celda no sea nula
                 {
-                    string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
-                    DetailsForm detailsForm = new DetailsForm(_facadeCT,selectedCryptoId);
+                    string selectedSymbol = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
+                    string selectedId = selectedRow.Cells["Id"].Value.ToString();
+
+                    DetailsForm detailsForm = new DetailsForm(_facadeCT,selectedSymbol,selectedId);
                     detailsForm.Show();
                 }
                 else

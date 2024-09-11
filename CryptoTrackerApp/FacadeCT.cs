@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using CryptoTrackerApp.Infrastructure;
 using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.Domain;
 
 namespace CryptoTrackerApp
 {
@@ -39,16 +40,10 @@ namespace CryptoTrackerApp
         }
 
         // Método para obtener alertas recientes
-        public async Task<List<AlertsHistoryDTO>> GetRecentAlerts(string userId, DateTime cutoffDate)
+        public async Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate)
         {
             var alerts = await _repository.Alerts.GetRecentAlerts(userId, cutoffDate);
-            var alertDTOs = alerts.Select(alert => new AlertsHistoryDTO(
-                alert.CryptoIdOutOfLimit,
-                alert.UserId,
-                alert.ChangePercent,
-                alert.Time
-            )).ToList();
-            return alertDTOs;
+            return alerts;
         }
 
         // Método para agregar una criptomoneda a favoritas
@@ -103,9 +98,8 @@ namespace CryptoTrackerApp
         // Método para obtener el historial de una criptomoneda de los últimos 6 meses
         public async Task<List<CryptoAssetHistoryDTO>> GetCryptoHistoryAsync(string cryptoId)
         {
-            var history = _cryptoApiClient.Get6MonthHistoryFrom(cryptoId);
-            MessageBox.Show("DESDE FACADE: " + history);
-            return history.ToList();
+            var history =  _cryptoApiClient.Get6MonthHistoryFrom(cryptoId);
+            return history;
         }
 
         // Método para monitorear cambios de criptomonedas y enviar alertas

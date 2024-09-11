@@ -1,6 +1,7 @@
 ﻿using CryptoTrackerApp.DTO;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
 {
@@ -52,15 +53,31 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
         {
             var historyList = new List<CryptoAssetHistoryDTO>();
 
+            // Utilizar cultura invariante para asegurar el punto como separador decimal
+            CultureInfo culture = CultureInfo.InvariantCulture;
+
             foreach (var responseItem in historyData.data)
             {
-                decimal price = decimal.Parse(responseItem.priceUsd);
-                long time = responseItem.time;
-                DateTimeOffset offset = DateTimeOffset.FromUnixTimeMilliseconds(time);
-                DateTime convertedTime = offset.UtcDateTime.ToLocalTime();
+                // Intentar convertir el precio de forma segura utilizando cultura invariante
+                if (decimal.TryParse(responseItem.priceUsd.ToString(), NumberStyles.Float, culture, out decimal price))
+                {
+                    // Redondear el precio a 2 decimales
+                    price = Math.Round(price, 2);
 
-                var historyDTO = new CryptoAssetHistoryDTO(price, convertedTime);
-                historyList.Add(historyDTO);
+                    // Convertir el timestamp a DateTime
+                    long time = responseItem.time;
+                    DateTimeOffset offset = DateTimeOffset.FromUnixTimeMilliseconds(time);
+                    DateTime convertedTime = offset.UtcDateTime.ToLocalTime();
+
+                    // Crear y agregar el DTO
+                    var historyDTO = new CryptoAssetHistoryDTO(price, convertedTime);
+                    historyList.Add(historyDTO);
+                }
+                else
+                {
+                    // Si no se puede convertir el precio, manejar el error o ignorar este item
+                    MessageBox.Show($"Error al convertir el precio: {responseItem.priceUsd}");
+                }
             }
 
             return historyList;

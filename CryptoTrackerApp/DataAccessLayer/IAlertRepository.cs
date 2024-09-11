@@ -1,4 +1,6 @@
-﻿using CryptoTrackerApp.Domain;
+﻿using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.Domain;
+using CryptoTrackerApp.DTO;
 
 public interface IAlertRepository
 {

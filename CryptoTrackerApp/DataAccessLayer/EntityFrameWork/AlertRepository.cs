@@ -1,6 +1,11 @@
-﻿using CryptoTrackerApp.Domain;
-using System.Globalization;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using CryptoTrackerApp.Domain;
+using System.Globalization;
+using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping;
+using CryptoTrackerApp.DTO;
 
 public class AlertRepository : IAlertRepository
 {
@@ -16,19 +21,25 @@ public class AlertRepository : IAlertRepository
 
     public async Task<List<Alert>> GetRecentAlerts(string userId, DateTime cutoffDate)
     {
+        
+        // Obtener todas las alertas de Supabase para el usuario
         var response = await _supabaseClient
             .From<Alert>()
             .Where(x => x.UserId == userId)
             .Get();
 
-        return response.Models
+        // Filtrar las alertas según el cutoffDate
+        var recentAlerts = response.Models
             .Where(alert => DateTime.ParseExact(alert.Time, "dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture) >= cutoffDate)
             .ToList();
+        
+        return recentAlerts;
     }
+
 
     public async Task AddAlert(string userId, string cryptoIdOutOfLimit, float changePercent, string time)
     {
-        var alert = new Alert
+        var alert = new AlertsHistory
         {
             UserId = userId,
             CryptoIdOutOfLimit = cryptoIdOutOfLimit,
@@ -36,7 +47,7 @@ public class AlertRepository : IAlertRepository
             Time = time
         };
         await _supabaseClient
-            .From<Alert>()
+            .From<AlertsHistory>()
             .Insert(alert);
     }
 }

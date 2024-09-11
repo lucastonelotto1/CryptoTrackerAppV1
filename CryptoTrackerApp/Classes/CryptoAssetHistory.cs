@@ -3,7 +3,7 @@
 
 namespace CryptoTrackerApp.Classes
 {
-    public class CryptoPriceHistory
+    public class CryptoAssetHistory
     {
         [JsonProperty("priceUsd")]
         public decimal PriceUsd { get; set; }

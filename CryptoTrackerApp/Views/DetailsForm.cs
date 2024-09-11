@@ -8,16 +8,18 @@ namespace CryptoTracker.Views
 {
     public partial class DetailsForm : Form
     {
-        private string cryptoId;
+        private string symbol;
+        private string id;
         private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-        public DetailsForm(FacadeCT facadeCT, string cryptoId)
+        public DetailsForm(FacadeCT facadeCT, string symbol, string id)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Details Initialized.");
             _facadeCT = facadeCT;
-            this.cryptoId = cryptoId;
+            this.symbol = symbol;
+            this.id = id;
             InitializeComponent();
             LoadCryptoDetails();
 
@@ -30,7 +32,7 @@ namespace CryptoTracker.Views
             try
             {
                 // Obtener detalles de la criptomoneda
-                var cryptoDetails = await _facadeCT.GetCryptoDetailsAsync(cryptoId);
+                var cryptoDetails = await _facadeCT.GetCryptoDetailsAsync(symbol);
 
 
                 string formattedPriceUsd = Math.Round(cryptoDetails.PriceUsd, 2).ToString("F2");
@@ -43,7 +45,7 @@ namespace CryptoTracker.Views
                 dataGridViewDetails.DataSource = new List<CryptoDTO> { cryptoDetails };
 
                 // Obtener y mostrar los datos de la evolución del precio
-                var historyData = await _facadeCT.GetCryptoHistoryAsync(cryptoId);
+                var historyData = await _facadeCT.GetCryptoHistoryAsync(id);
 
                 if (historyData == null || !historyData.Any())
                 {
@@ -70,6 +72,8 @@ namespace CryptoTracker.Views
                 {
                     DateTime date = price.Date;
                     decimal priceValue = price.PriceUsd;
+                    if (date < DateTime.Now.AddMonths(-6)) continue; // Saltar fechas fuera de rango
+
                     minPrice = Math.Min(minPrice, priceValue); // Encontrar el precio mínimo
                     series.Points.AddXY(date, Math.Round(priceValue, 2));
                 }

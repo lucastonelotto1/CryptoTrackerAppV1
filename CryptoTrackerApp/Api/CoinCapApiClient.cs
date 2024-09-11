@@ -7,6 +7,7 @@ using CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms;
 
 public class CoinCapApiClient : ICoinCapApiClient
 {
@@ -67,14 +68,23 @@ public class CoinCapApiClient : ICoinCapApiClient
 
         // Construir la URL correctamente
         string historyUrl = $"https://api.coincap.io/v2/assets/{cryptoId}/history?interval=d1";
+        
+        
         historyConnection.GetAPIResponseItem(historyUrl);
 
-        var historyData = historyConnection.Data;
+
+        var historyData =  historyConnection.Data;
 
         // Convertir dynamic a List<CryptoAssetHistoryDTO>
         List<CryptoAssetHistoryDTO> historyList = CryptoMapper.MapToCryptoAssetHistoryDTO(historyData);
-        MessageBox.Show("DESDE COINCAPAPI: " + historyList);
         // Filtrar los datos de los últimos 6 meses
+
+        MessageBox.Show("Mapeado"+historyList.ToString());
+
+        var x = historyList.Where(h => ((DateTimeOffset)h.Date).ToUnixTimeMilliseconds() >= sixMonthsBack).ToList();
+
+        MessageBox.Show("Despues del recorte"+x);
+
         return historyList.Where(h => ((DateTimeOffset)h.Date).ToUnixTimeMilliseconds() >= sixMonthsBack).ToList();
     }
 
