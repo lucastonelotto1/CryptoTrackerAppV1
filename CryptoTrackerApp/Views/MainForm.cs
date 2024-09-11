@@ -48,7 +48,7 @@ namespace CryptoTrackerApp
 
             // Data Loading
             LoadCryptoAssets();
-            LoadAlerts();
+            //LoadAlerts();
         }
 
         // Designer
@@ -330,7 +330,7 @@ namespace CryptoTrackerApp
                 LogManager.Shutdown();
             }
         }
-
+/*
         private async void LoadAlerts()
         {
             try
@@ -361,7 +361,7 @@ namespace CryptoTrackerApp
                 LogManager.Shutdown();
             }
         }
-
+*/
 
         // Buttons
         private void btnAddCrypto_Click(object sender, EventArgs e)

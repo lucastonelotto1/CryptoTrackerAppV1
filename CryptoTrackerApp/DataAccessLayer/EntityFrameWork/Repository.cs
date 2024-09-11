@@ -25,7 +25,8 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
 
         public async Task<Session> Authorize(string email, string password)
         {
-            return await _supabaseClient.Auth.SignIn(email, password);
+            MessageBox.Show("aUTH DE SIGNINWITHPASWW");
+            return await _supabaseClient.Auth.SignInWithPassword(email, password);
         }
 
         public Task SaveChangesAsync()

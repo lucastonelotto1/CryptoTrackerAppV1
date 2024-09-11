@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using CryptoTrackerApp.Infrastructure;
 using CryptoTrackerApp.Classes;
 using CryptoTrackerApp.Domain;
+using System.Threading;
+using CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping;
 
 namespace CryptoTrackerApp
 {
@@ -63,7 +65,9 @@ namespace CryptoTrackerApp
         // Método para autorizar a un usuario
         public async Task<SessionDTO> Authorize(string email, string password)
         {
+            MessageBox.Show("PRE AUTH");
             var session = await _repository.Authorize(email, password);
+            MessageBox.Show("POST AUTH");
             return new SessionDTO(session.AccessToken, session.User.Id, session.User.Email);
         }
 
@@ -105,8 +109,7 @@ namespace CryptoTrackerApp
         // Método para monitorear cambios de criptomonedas y enviar alertas
         public async Task MonitorCryptoChangesAsync(string userId, string email, string name)
         {
-            // Obtener las criptomonedas favoritas del usuario
-            var favoriteCryptos = await GetFavoriteCryptosFromDb(userId);  //Todas las criptomonedas favoritas del usuario con la info de la API 
+            var favoriteCryptos = await GetFavoriteCryptosFromDb(userId);
 
             // Obtener todos los criptoactivos desde la API
             List<CryptoDTO> cryptoAssets = _cryptoApiClient.GetAllCryptosDTO();
@@ -120,7 +123,6 @@ namespace CryptoTrackerApp
 
                     if (changePercent24Hr > favorite.Limit)
                     {
-                        // Enviar correo si el cambio de precio excede el límite
                         await _emailService.SendEmailAsync(
                             email,
                             name,
@@ -128,7 +130,6 @@ namespace CryptoTrackerApp
                             $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {matchingCrypto.ChangePercent24Hr}% in the last 24 hours.</h1>"
                         );
 
-                        // Guardar la alerta en el repositorio
                         string argentinaTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
                         await AddAlert(userId, matchingCrypto.Name, changePercent24Hr, argentinaTime);
                     }
@@ -136,20 +137,23 @@ namespace CryptoTrackerApp
             }
         }
 
+
         // Método para autorizar y ejecutar la tarea en segundo plano
         public async Task<SessionDTO> AuthorizeAndStartBackgroundTask(string email, string password)
         {
             try
             {
                 var session = await Authorize(email, password);
-
-                if (session != null && session.AccessToken != null)
+                //Hasta acá seguro
+                if (session != null)
                 {
                     // Crear instancia de TaskBackgroundService con las dependencias necesarias
                     var backgroundService = new TaskBackgroundService(_emailService, this);
 
                     // Inicia la tarea en segundo plano usando la sesión autorizada
-                    await backgroundService.RunBackgroundTaskAsync(session);
+                    Task.Run(async () => await backgroundService.RunBackgroundTaskAsync(session));
+
+                    MessageBox.Show("Despues de la llamada al backgroundService en Facade");
                 }
 
                 return session;
