@@ -41,7 +41,8 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork
             var ss = new FavoriteCryptos
             {
                 UserId = userId,
-                CryptoId = favoriteCrypto
+                CryptoId = favoriteCrypto,
+                Limit = 15
             };
 
             await _supabaseClient

@@ -16,10 +16,21 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
             string maxSupply = responseItem.maxSupply?.ToString() ?? "N/A";
             string marketCapUsd = responseItem.marketCapUsd?.ToString() ?? "N/A";
             string volumeUsd24Hr = responseItem.volumeUsd24Hr?.ToString() ?? "N/A";
-            decimal priceUsd = decimal.Parse(responseItem.priceUsd);
-            decimal changePercent24Hr = decimal.Parse(responseItem.changePercent24Hr);
-             string vwap24Hr = responseItem.vwap24Hr?.ToString() ?? "N/A";
+            string vwap24Hr = responseItem.vwap24Hr?.ToString() ?? "N/A";
             string explorer = responseItem.explorer?.ToString() ?? "N/A";
+
+            decimal priceUsd = 0;
+            decimal changePercent24Hr = 0;
+
+            try
+            {
+                priceUsd = decimal.Parse(responseItem.priceUsd?.ToString() ?? "0");
+                changePercent24Hr = decimal.Parse(responseItem.changePercent24Hr?.ToString() ?? "0");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al convertir los valores: {ex.Message}");
+            }
 
             return new CryptoDTO(
                 id,

@@ -12,13 +12,15 @@ namespace CryptoTracker.Views
         private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-        public DetailsForm(string cryptoId)
+        public DetailsForm(FacadeCT facadeCT, string cryptoId)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Details Initialized.");
-            InitializeComponent();
+            _facadeCT = facadeCT;
             this.cryptoId = cryptoId;
+            InitializeComponent();
             LoadCryptoDetails();
+
 
 
         }
@@ -29,6 +31,7 @@ namespace CryptoTracker.Views
             {
                 // Obtener detalles de la criptomoneda
                 var cryptoDetails = await _facadeCT.GetCryptoDetailsAsync(cryptoId);
+
 
                 string formattedPriceUsd = Math.Round(cryptoDetails.PriceUsd, 2).ToString("F2");
                 string formattedChangePercent24Hr = Math.Round(cryptoDetails.ChangePercent24Hr, 2).ToString("F3");
@@ -41,6 +44,12 @@ namespace CryptoTracker.Views
 
                 // Obtener y mostrar los datos de la evolución del precio
                 var historyData = await _facadeCT.GetCryptoHistoryAsync(cryptoId);
+
+                if (historyData == null || !historyData.Any())
+                {
+                    MessageBox.Show("No se encontraron datos de historial para esta criptomoneda.");
+                    return;
+                }
 
                 // Inicializar la serie del Chart
                 var series = new Series
@@ -59,26 +68,24 @@ namespace CryptoTracker.Views
                 // Llenar el Chart con los datos de la evolución del precio
                 foreach (var price in historyData)
                 {
-                    DateTime date = price.Date;  //DateTimeOffset.FromUnixTimeMilliseconds(price.Date).DateTime;
+                    DateTime date = price.Date;
                     decimal priceValue = price.PriceUsd;
-                    minPrice = Math.Floor(Math.Min(minPrice, priceValue)); // Encontrar el precio mínimo
-                    string formattedPriceUsd2 = Math.Round(priceValue, 2).ToString("C2");
-                    series.Points.AddXY(date,formattedPriceUsd2);
+                    minPrice = Math.Min(minPrice, priceValue); // Encontrar el precio mínimo
+                    series.Points.AddXY(date, Math.Round(priceValue, 2));
                 }
 
                 // Ajustar el eje Y para que comience en el precio mínimo
-                chartPriceEvolution.ChartAreas[0].AxisY.LabelStyle.Format = "C2"; // Formatear el eje Y para mostrar dos decimales y el símbolo de dólar
-                chartPriceEvolution.ChartAreas[0].AxisY.Minimum = (double)minPrice; // Establecer el valor mínimo del eje Y en el precio mínimo
-                chartPriceEvolution.ChartAreas[0].AxisY.ScaleView.Zoomable = true; // Habilitar el zoom en el eje Y
-                chartPriceEvolution.ChartAreas[0].CursorY.IsUserEnabled = true; // Habilitar el cursor en el eje Y
-                chartPriceEvolution.ChartAreas[0].CursorY.LineColor = System.Drawing.Color.Red; // Color del cursor
-                chartPriceEvolution.ChartAreas[0].CursorX.IsUserEnabled = true; // Habilitar el cursor en el eje X
-                chartPriceEvolution.ChartAreas[0].CursorX.LineColor = System.Drawing.Color.Red; // Color del cursor
-                chartPriceEvolution.AccessibilityObject.Name = "Price Evolution Chart"; // Nombre del gráfico para accesibilidad
-                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Format = "MM/yyyy"; // Formatear el eje X para mostrar la fecha
+                chartPriceEvolution.ChartAreas[0].AxisY.LabelStyle.Format = "C2"; // Formatear el eje Y
+                chartPriceEvolution.ChartAreas[0].AxisY.Minimum = (double)minPrice; // Establecer el valor mínimo del eje Y
+                chartPriceEvolution.ChartAreas[0].AxisY.ScaleView.Zoomable = true;
+                chartPriceEvolution.ChartAreas[0].CursorY.IsUserEnabled = true;
+                chartPriceEvolution.ChartAreas[0].CursorY.LineColor = System.Drawing.Color.Red;
+                chartPriceEvolution.ChartAreas[0].CursorX.IsUserEnabled = true;
+                chartPriceEvolution.ChartAreas[0].CursorX.LineColor = System.Drawing.Color.Red;
+                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Format = "MM/yyyy";
                 chartPriceEvolution.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Months;
                 chartPriceEvolution.ChartAreas[0].AxisX.Interval = 1;
-                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Angle = -45; // Inclinar las etiquetas del eje X para mejor legibilidad
+                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Angle = -45;
                 chartPriceEvolution.Invalidate(); // Refrescar el Chart
             }
             catch (Exception ex)

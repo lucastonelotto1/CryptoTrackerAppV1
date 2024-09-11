@@ -95,19 +95,17 @@ namespace CryptoTrackerApp
         // Método para obtener el precio de una criptomoneda desde la API
         public async Task<CryptoDTO> GetCryptoDetailsAsync(string cryptoId)
         {
-            var cryptoDetails = _cryptoApiClient.GetAllCryptosDTO().Find(crypto => crypto.Id == cryptoId);
+            var cryptoDetails = _cryptoApiClient.GetAllCryptosDTO().Find(crypto => crypto.Symbol == cryptoId);
             return cryptoDetails;
         }
+
 
         // Método para obtener el historial de una criptomoneda de los últimos 6 meses
         public async Task<List<CryptoAssetHistoryDTO>> GetCryptoHistoryAsync(string cryptoId)
         {
             var history = _cryptoApiClient.Get6MonthHistoryFrom(cryptoId);
-            return history.Select(h => new CryptoAssetHistoryDTO(h.PriceUsd, h.Date)
-            {
-                VolumeUsd24Hr = h.VolumeUsd24Hr,
-                ChangePercent24Hr = h.ChangePercent24Hr
-            }).ToList();
+            MessageBox.Show("DESDE FACADE: " + history);
+            return history.ToList();
         }
 
         // Método para monitorear cambios de criptomonedas y enviar alertas
@@ -176,7 +174,7 @@ namespace CryptoTrackerApp
             var favoriteCryptoIds = favoriteCryptos.Select(fc => fc.CryptoId).ToList();
 
             var nonFavoriteCryptos = assets
-                .Where(asset => !favoriteCryptoIds.Contains(asset.Id))
+                .Where(asset => !favoriteCryptoIds.Contains(asset.Symbol))
                 .ToList();
 
             return nonFavoriteCryptos;

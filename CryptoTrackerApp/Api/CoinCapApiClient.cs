@@ -38,16 +38,11 @@ public class CoinCapApiClient : ICoinCapApiClient
 
                 if (item.CryptoId == responseItem.symbol.ToString())
                 {
-                    //var objectDTO = CryptoMapper.MapToDTO(responseItem);
-                    list.Add(responseItem);
-                }
-                else
-                {
-                    MessageBox.Show($"Comparamos db {item.CryptoId} | api {responseItem.symbol}");
+                    CryptoDTO objectDTO = CryptoMapper.MapToDTO(responseItem);
+                    list.Add(objectDTO);
                 }
             }
         }
-        MessageBox.Show($"Cantidad de elementos en la lista final: {list.Count}");
 
         return list;
     }
@@ -64,19 +59,23 @@ public class CoinCapApiClient : ICoinCapApiClient
         return list;
     }
 
-    public List<CryptoAssetHistoryDTO> Get6MonthHistoryFrom(string crypto)
+    public List<CryptoAssetHistoryDTO> Get6MonthHistoryFrom(string cryptoId)
     {
         var localNow = DateTime.Now;
         var sixMonthsBack = ((DateTimeOffset)(localNow.AddMonths(-6).ToUniversalTime())).ToUnixTimeMilliseconds();
         var historyConnection = new ApiResponse();
-        string historyUrl = string.Format(history, crypto);
+
+        // Construir la URL correctamente
+        string historyUrl = $"https://api.coincap.io/v2/assets/{cryptoId}/history?interval=d1";
         historyConnection.GetAPIResponseItem(historyUrl);
-        var historyData = historyConnection.Data; // Mantener como dynamic aquí si es necesario
 
-        // Convertir dynamic a un tipo fuertemente tipado (por ejemplo, List<CryptoAssetHistoryDTO>)
+        var historyData = historyConnection.Data;
+
+        // Convertir dynamic a List<CryptoAssetHistoryDTO>
         List<CryptoAssetHistoryDTO> historyList = CryptoMapper.MapToCryptoAssetHistoryDTO(historyData);
-
-        // Ahora puedes usar LINQ sin problemas
+        MessageBox.Show("DESDE COINCAPAPI: " + historyList);
+        // Filtrar los datos de los últimos 6 meses
         return historyList.Where(h => ((DateTimeOffset)h.Date).ToUnixTimeMilliseconds() >= sixMonthsBack).ToList();
     }
+
 }

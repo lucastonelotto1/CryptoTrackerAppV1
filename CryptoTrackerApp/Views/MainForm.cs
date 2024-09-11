@@ -296,17 +296,10 @@ namespace CryptoTrackerApp
             try
             {
                 List<CryptoDTO> assets = await _facadeCT.GetFavoriteCryptosId(userId);
-                MessageBox.Show ($"{userId}");
-                MessageBox.Show($"Number of favorite cryptos loaded: {assets.Count}");
-                string cryptoNames = string.Join(", ", assets.Select(a => a.Name));
-                MessageBox.Show($"Favorite cryptos loaded: {cryptoNames}");
-
                 dataGridViewCryptoAssets.Rows.Clear(); // Limpia la tabla antes de cargar los nuevos datos
 
                 foreach (var asset in assets)
                 {
-                    MessageBox.Show("Entró al foreach");
-
                     string formattedPriceUsd = Math.Round(asset.PriceUsd, 2).ToString("F2");
                     string formattedChangePercent24Hr = Math.Round(asset.ChangePercent24Hr, 2).ToString("F3");
                     string formattedVolumeUsd24Hr = Math.Round(Convert.ToDecimal(asset.VolumeUsd24Hr), 2).ToString("F2");
@@ -384,10 +377,10 @@ namespace CryptoTrackerApp
             if (dataGridViewCryptoAssets.SelectedRows.Count > 0)
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
-                if (selectedRow.Cells["Id"].Value != null) // Verifica que la celda no sea nula
+                if (selectedRow.Cells["dataGridViewTextBoxColumn2"].Value != null) // Verifica que la celda no sea nula
                 {
-                    string selectedCryptoId = selectedRow.Cells["Id"].Value.ToString();
-                    DetailsForm detailsForm = new DetailsForm(selectedCryptoId);
+                    string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
+                    DetailsForm detailsForm = new DetailsForm(_facadeCT,selectedCryptoId);
                     detailsForm.Show();
                 }
                 else
@@ -436,7 +429,7 @@ namespace CryptoTrackerApp
             {
                 var selectedRow = dataGridViewCryptoAssets.SelectedRows[0];
                 string selectedCryptoId = selectedRow.Cells["dataGridViewTextBoxColumn2"].Value.ToString();
-                LimitsForm changeLimitsForm = new LimitsForm(session,selectedCryptoId);
+                LimitsForm changeLimitsForm = new LimitsForm(_facadeCT,session,selectedCryptoId);
                 changeLimitsForm.Show();
             }
             else

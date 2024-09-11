@@ -14,7 +14,7 @@ namespace CryptoTrackerApp.Views
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
 
-        public LimitsForm(SessionDTO session, string id)
+        public LimitsForm(FacadeCT facadeCT, SessionDTO session, string id)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Limits Form initialized.");
@@ -22,8 +22,7 @@ namespace CryptoTrackerApp.Views
             this.session = session;
             this.UserId = session.Id;
             this.CryptoId = id;
-
-
+            _facadeCT = facadeCT;
 
             // Inicializar label y textbox con la posición inicial
             label1.Text = "Update Limits for " + CryptoId;

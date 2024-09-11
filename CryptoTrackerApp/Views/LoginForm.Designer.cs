@@ -55,9 +55,9 @@ namespace CryptoTrackerApp
             lblUsername.ForeColor = Color.FromArgb(56, 152, 213);
             lblUsername.Location = new Point(86, 127);
             lblUsername.Name = "lblUsername";
-            lblUsername.Size = new Size(60, 15);
+            lblUsername.Size = new Size(36, 15);
             lblUsername.TabIndex = 1;
-            lblUsername.Text = "Username";
+            lblUsername.Text = "Email";
             lblUsername.Click += label2_Click;
             // 
             // lblPassword
