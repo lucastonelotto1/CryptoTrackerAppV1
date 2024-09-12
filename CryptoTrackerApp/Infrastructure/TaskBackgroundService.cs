@@ -4,7 +4,7 @@ using NLog;
 
 namespace CryptoTrackerApp.Infrastructure
 {
-    public partial class TaskBackgroundService
+    public class TaskBackgroundService
     {
         private readonly FacadeCT _facadeCT;
         private readonly IEmailService _emailService;

@@ -111,6 +111,7 @@ namespace CryptoTrackerApp
             dataGridViewCryptoAssets.Name = "dataGridViewCryptoAssets";
             dataGridViewCryptoAssets.ReadOnly = true;
             dataGridViewCryptoAssets.RowHeadersVisible = false;
+            dataGridViewCryptoAssets.RowHeadersWidth = 51;
             dataGridViewCryptoAssets.RowTemplate.Height = 35;
             dataGridViewCryptoAssets.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewCryptoAssets.Size = new Size(1068, 384);
@@ -119,60 +120,70 @@ namespace CryptoTrackerApp
             // dataGridViewTextBoxColumn1
             // 
             dataGridViewTextBoxColumn1.HeaderText = "Ranking";
+            dataGridViewTextBoxColumn1.MinimumWidth = 6;
             dataGridViewTextBoxColumn1.Name = "dataGridViewTextBoxColumn1";
             dataGridViewTextBoxColumn1.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn2
             // 
             dataGridViewTextBoxColumn2.HeaderText = "Symbol";
+            dataGridViewTextBoxColumn2.MinimumWidth = 6;
             dataGridViewTextBoxColumn2.Name = "dataGridViewTextBoxColumn2";
             dataGridViewTextBoxColumn2.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn3
             // 
             dataGridViewTextBoxColumn3.HeaderText = "Name";
+            dataGridViewTextBoxColumn3.MinimumWidth = 6;
             dataGridViewTextBoxColumn3.Name = "dataGridViewTextBoxColumn3";
             dataGridViewTextBoxColumn3.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn4
             // 
             dataGridViewTextBoxColumn4.HeaderText = "Supply";
+            dataGridViewTextBoxColumn4.MinimumWidth = 6;
             dataGridViewTextBoxColumn4.Name = "dataGridViewTextBoxColumn4";
             dataGridViewTextBoxColumn4.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn5
             // 
             dataGridViewTextBoxColumn5.HeaderText = "Market Cap USD";
+            dataGridViewTextBoxColumn5.MinimumWidth = 6;
             dataGridViewTextBoxColumn5.Name = "dataGridViewTextBoxColumn5";
             dataGridViewTextBoxColumn5.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn6
             // 
             dataGridViewTextBoxColumn6.HeaderText = "Volume USD";
+            dataGridViewTextBoxColumn6.MinimumWidth = 6;
             dataGridViewTextBoxColumn6.Name = "dataGridViewTextBoxColumn6";
             dataGridViewTextBoxColumn6.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn7
             // 
             dataGridViewTextBoxColumn7.HeaderText = "Price USD";
+            dataGridViewTextBoxColumn7.MinimumWidth = 6;
             dataGridViewTextBoxColumn7.Name = "dataGridViewTextBoxColumn7";
             dataGridViewTextBoxColumn7.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn8
             // 
             dataGridViewTextBoxColumn8.HeaderText = "Change";
+            dataGridViewTextBoxColumn8.MinimumWidth = 6;
             dataGridViewTextBoxColumn8.Name = "dataGridViewTextBoxColumn8";
             dataGridViewTextBoxColumn8.ReadOnly = true;
             // 
             // dataGridViewTextBoxColumn9
             // 
             dataGridViewTextBoxColumn9.HeaderText = "VWAP";
+            dataGridViewTextBoxColumn9.MinimumWidth = 6;
             dataGridViewTextBoxColumn9.Name = "dataGridViewTextBoxColumn9";
             dataGridViewTextBoxColumn9.ReadOnly = true;
             // 
             // Id
             // 
             Id.HeaderText = "Id";
+            Id.MinimumWidth = 6;
             Id.Name = "Id";
             Id.ReadOnly = true;
             Id.Visible = false;
@@ -217,7 +228,6 @@ namespace CryptoTrackerApp
             // 
             btnLimits.BackColor = Color.FromArgb(64, 228, 175);
             btnLimits.Cursor = Cursors.Hand;
-            btnLimits.FlatStyle = FlatStyle.Flat;
             btnLimits.Location = new Point(288, 423);
             btnLimits.Name = "btnLimits";
             btnLimits.Size = new Size(146, 44);
@@ -257,6 +267,7 @@ namespace CryptoTrackerApp
             dataGridViewAlerts.Name = "dataGridViewAlerts";
             dataGridViewAlerts.ReadOnly = true;
             dataGridViewAlerts.RowHeadersVisible = false;
+            dataGridViewAlerts.RowHeadersWidth = 51;
             dataGridViewAlerts.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
             dataGridViewAlerts.Size = new Size(456, 384);
             dataGridViewAlerts.TabIndex = 6;
@@ -264,6 +275,7 @@ namespace CryptoTrackerApp
             // AlertHistory
             // 
             AlertHistory.HeaderText = "Notifications";
+            AlertHistory.MinimumWidth = 6;
             AlertHistory.Name = "AlertHistory";
             AlertHistory.ReadOnly = true;
             AlertHistory.ToolTipText = "Notifications";
