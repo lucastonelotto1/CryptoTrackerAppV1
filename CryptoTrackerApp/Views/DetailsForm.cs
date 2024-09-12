@@ -1,24 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Forms.DataVisualization.Charting;
-using Newtonsoft.Json;
+﻿using System.Windows.Forms.DataVisualization.Charting;
+using CryptoTrackerApp;
 using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.DTO;
+using NLog;
 
 namespace CryptoTracker.Views
 {
     public partial class DetailsForm : Form
     {
-        private string cryptoId;
-        private static readonly CoinCapApiClient client = new CoinCapApiClient();
+        private string symbol;
+        private string id;
+        private readonly FacadeCT _facadeCT;
+        private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
 
-        public DetailsForm(string cryptoId)
+        public DetailsForm(FacadeCT facadeCT, string symbol, string id)
         {
+            LogManager.LoadConfiguration("nlog.config");
+            Logger.Info("Details Initialized.");
+            _facadeCT = facadeCT;
+            this.symbol = symbol;
+            this.id = id;
             InitializeComponent();
-            this.cryptoId = cryptoId;
             LoadCryptoDetails();
+
+
+
         }
 
         private async void LoadCryptoDetails()
@@ -26,7 +32,8 @@ namespace CryptoTracker.Views
             try
             {
                 // Obtener detalles de la criptomoneda
-                var cryptoDetails = await client.GetCryptoAssetByIdAsync(cryptoId);
+                var cryptoDetails = await _facadeCT.GetCryptoDetailsAsync(symbol);
+
 
                 string formattedPriceUsd = Math.Round(cryptoDetails.PriceUsd, 2).ToString("F2");
                 string formattedChangePercent24Hr = Math.Round(cryptoDetails.ChangePercent24Hr, 2).ToString("F3");
@@ -35,10 +42,16 @@ namespace CryptoTracker.Views
                 string formattedMarketCapUsd = Math.Round(Convert.ToDecimal(cryptoDetails.MarketCapUsd), 2).ToString("F2");
                 
                 
-                dataGridViewDetails.DataSource = new List<CryptoAsset> { cryptoDetails };
+                dataGridViewDetails.DataSource = new List<CryptoDTO> { cryptoDetails };
 
                 // Obtener y mostrar los datos de la evolución del precio
-                var historyData = await client.GetCryptoAssetHistoryAsync(cryptoId);
+                var historyData = await _facadeCT.GetCryptoHistoryAsync(id);
+
+                if (historyData == null || !historyData.Any())
+                {
+                    MessageBox.Show("No se encontraron datos de historial para esta criptomoneda.");
+                    return;
+                }
 
                 // Inicializar la serie del Chart
                 var series = new Series
@@ -57,39 +70,37 @@ namespace CryptoTracker.Views
                 // Llenar el Chart con los datos de la evolución del precio
                 foreach (var price in historyData)
                 {
-                    DateTime date = DateTimeOffset.FromUnixTimeMilliseconds(price.Time).DateTime;
+                    DateTime date = price.Date;
                     decimal priceValue = price.PriceUsd;
-                    minPrice = Math.Floor(Math.Min(minPrice, priceValue)); // Encontrar el precio mínimo
-                    string formattedPriceUsd2 = Math.Round(priceValue, 2).ToString("C2");
-                    series.Points.AddXY(date, formattedPriceUsd2);
+                    if (date < DateTime.Now.AddMonths(-6)) continue; // Saltar fechas fuera de rango
+
+                    minPrice = Math.Min(minPrice, priceValue); // Encontrar el precio mínimo
+                    series.Points.AddXY(date, Math.Round(priceValue, 2));
                 }
 
                 // Ajustar el eje Y para que comience en el precio mínimo
-                chartPriceEvolution.ChartAreas[0].AxisY.LabelStyle.Format = "C2"; // Formatear el eje Y para mostrar dos decimales y el símbolo de dólar
-                chartPriceEvolution.ChartAreas[0].AxisY.Minimum = (double)minPrice; // Establecer el valor mínimo del eje Y en el precio mínimo
-                chartPriceEvolution.ChartAreas[0].AxisY.ScaleView.Zoomable = true; // Habilitar el zoom en el eje Y
-                chartPriceEvolution.ChartAreas[0].CursorY.IsUserEnabled = true; // Habilitar el cursor en el eje Y
-                chartPriceEvolution.ChartAreas[0].CursorY.LineColor = System.Drawing.Color.Red; // Color del cursor
-                chartPriceEvolution.ChartAreas[0].CursorX.IsUserEnabled = true; // Habilitar el cursor en el eje X
-                chartPriceEvolution.ChartAreas[0].CursorX.LineColor = System.Drawing.Color.Red; // Color del cursor
-                chartPriceEvolution.AccessibilityObject.Name = "Price Evolution Chart"; // Nombre del gráfico para accesibilidad
-                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Format = "MM/yyyy"; // Formatear el eje X para mostrar la fecha
+                chartPriceEvolution.ChartAreas[0].AxisY.LabelStyle.Format = "C2"; // Formatear el eje Y
+                chartPriceEvolution.ChartAreas[0].AxisY.Minimum = (double)minPrice; // Establecer el valor mínimo del eje Y
+                chartPriceEvolution.ChartAreas[0].AxisY.ScaleView.Zoomable = true;
+                chartPriceEvolution.ChartAreas[0].CursorY.IsUserEnabled = true;
+                chartPriceEvolution.ChartAreas[0].CursorY.LineColor = System.Drawing.Color.Red;
+                chartPriceEvolution.ChartAreas[0].CursorX.IsUserEnabled = true;
+                chartPriceEvolution.ChartAreas[0].CursorX.LineColor = System.Drawing.Color.Red;
+                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Format = "MM/yyyy";
                 chartPriceEvolution.ChartAreas[0].AxisX.IntervalType = DateTimeIntervalType.Months;
                 chartPriceEvolution.ChartAreas[0].AxisX.Interval = 1;
-                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Angle = -45; // Inclinar las etiquetas del eje X para mejor legibilidad
+                chartPriceEvolution.ChartAreas[0].AxisX.LabelStyle.Angle = -45;
                 chartPriceEvolution.Invalidate(); // Refrescar el Chart
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading crypto details: {ex.Message}");
+                Logger.Error("An error occurred while loading crypto details: " + ex.Message);
+                return;
             }
-        }
-
-
-
-        private void DetailsForm_Load(object sender, EventArgs e)
-        {
-
+            finally
+            {
+                LogManager.Shutdown();
+            }
         }
 
         private void btnHome_Click(object sender, EventArgs e)

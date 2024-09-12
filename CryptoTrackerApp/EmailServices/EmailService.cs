@@ -1,20 +1,31 @@
-﻿using CryptoTrackerApp.Classes;
-using Microsoft.VisualBasic.ApplicationServices;
-using Supabase.Gotrue;
-using System;
+﻿using System.IO;
 using System.Net;
 using System.Net.Mail;
+using Microsoft.Extensions.Configuration;
 using System.Threading.Tasks;
+using CryptoTrackerApp.EmailServices;
+using NLog;
 
-public partial class EmailService
+public class EmailService : IEmailService
 {
-    private string smtpServer = "smtp-relay.brevo.com";
-    private int port = 587;
-    private string login = "78cd77001@smtp-brevo.com";
-    private string password = "P9yG3FULqRhx5fJW";
-    private string fromEmail = "grupops36@gmail.com";
-    private string fromName = "Crypto Tracker App";
-    private string subject = "Alert from Crypto Tracker App";
+    private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
+
+    private readonly string smtpServer;
+    private readonly int port;
+    private readonly string login;
+    private readonly string password;
+    private readonly string fromEmail;
+    private readonly string fromName;
+
+    public EmailService(IConfiguration configuration)
+    {
+        smtpServer = configuration["SmtpConfig:Server"];
+        port = int.Parse(configuration["SmtpConfig:Port"]);
+        login = configuration["SmtpConfig:Login"];
+        password = configuration["SmtpConfig:Password"];
+        fromEmail = configuration["SmtpConfig:FromEmail"];
+        fromName = configuration["SmtpConfig:FromName"];
+    }
 
     public async Task SendEmailAsync(string toEmail, string toName, string plainTextContent, string htmlContent)
     {
@@ -33,7 +44,7 @@ public partial class EmailService
         {
             using (var message = new MailMessage(fromAddress, toAddress)
             {
-                Subject = subject,
+                Subject = "Alert from Crypto Tracker App",
                 Body = plainTextContent,
                 IsBodyHtml = true,
             })
@@ -44,11 +55,11 @@ public partial class EmailService
                 try
                 {
                     await smtp.SendMailAsync(message);
-                    //MessageBox.Show("Correo enviado exitosamente.");
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("Error al enviar el correo: " + ex.Message);
+                    Logger.Error(ex, "Failed to send email.");
+                    throw;
                 }
             }
         }

@@ -1,10 +1,6 @@
 ﻿using Supabase.Postgrest.Attributes;
 using Supabase.Postgrest.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace CryptoTrackerApp.Classes
 {
@@ -14,7 +10,7 @@ namespace CryptoTrackerApp.Classes
         public int Id { get; set; }
 
         [Column("UserId")]
-        public Guid UserId { get; set; }
+        public string UserId { get; set; }
 
         [Column("CryptoId")]
         public string CryptoId { get; set; }

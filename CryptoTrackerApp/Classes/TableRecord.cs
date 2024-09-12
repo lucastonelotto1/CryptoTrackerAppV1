@@ -1,5 +1,4 @@
 ﻿using Supabase.Postgrest.Models;
-using System.Collections.Generic;
 
 namespace CryptoTrackerApp.Classes
 {

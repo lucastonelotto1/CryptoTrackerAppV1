@@ -1,34 +1,28 @@
 ﻿using Supabase.Gotrue;
-using Supabase;
-using System;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using CryptoTrackerApp.Classes;
-using System.Collections.Generic;
 using NLog;
+using CryptoTrackerApp.DTO;
 
 namespace CryptoTrackerApp.Views
 {
     public partial class LimitsForm : Form
     {
         private string UserId;
-        private Session session;
         private string CryptoId;
-        private Supabase.Client supabaseClient;
+
+        private SessionDTO session;
+        private readonly FacadeCT _facadeCT;
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        private DatabaseHelper databaseHelper;
 
 
-        public LimitsForm(Session session, string id)
+        public LimitsForm(FacadeCT facadeCT, SessionDTO session, string id)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Limits Form initialized.");
             InitializeComponent();
             this.session = session;
-            this.UserId = session.User.Id;
+            this.UserId = session.Id;
             this.CryptoId = id;
-            databaseHelper = new DatabaseHelper();
-
+            _facadeCT = facadeCT;
 
             // Inicializar label y textbox con la posición inicial
             label1.Text = "Update Limits for " + CryptoId;
@@ -44,7 +38,7 @@ namespace CryptoTrackerApp.Views
             try
             {
                 // Usa await para esperar el resultado del método asincrónico
-                var actualLimit = await databaseHelper.GetLimitDb(UserId, CryptoId);
+                var actualLimit = await _facadeCT.GetLimit(UserId, CryptoId);
 
                 // Convierte el resultado a string y lo asigna al TextBox
                 textBox1.Text = actualLimit.ToString();
@@ -82,7 +76,7 @@ namespace CryptoTrackerApp.Views
         {
            try
             {
-                await databaseHelper.UpdateLimitDb(newLimit, UserId, CryptoId);
+                await _facadeCT.UpdateLimit(newLimit, UserId, CryptoId);
             }
             catch (Exception ex)
             {

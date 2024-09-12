@@ -1,43 +1,44 @@
 using System;
 using System.Windows.Forms;
-using CryptoTrackerApp.Classes;
+using CryptoTrackerApp.Infrastructure;
 using NLog;
-using Supabase;
+using CryptoTrackerApp.DTO;
+using CryptoTrackerApp.DataAccessLayer.EntityFrameWork;
 
 namespace CryptoTrackerApp
 {
     public partial class LoginForm : Form
     {
-        private DatabaseHelper databaseHelper;
+        public readonly FacadeCT _facadeCT;
+
         private static readonly ILogger Logger = LogManager.GetCurrentClassLogger();
-        public LoginForm()
+
+        public LoginForm(FacadeCT facadeCT)
         {
             LogManager.LoadConfiguration("nlog.config");
             Logger.Info("Login Initialized.");
             InitializeComponent();
+            _facadeCT = facadeCT;
 
-            // Instances
-            databaseHelper = new DatabaseHelper();
         }
 
         private async void btnLogin_Click(object sender, EventArgs e)
         {
+
             var email = txtUsername.Text;
             var password = txtPassword.Text;
 
             try
             {
-                var session = await databaseHelper.Authorize(email, password);
-
-                if (session != null && session.AccessToken != null)
+                // Llamada al facade para manejar la autorización y la tarea en segundo plano
+                var sessionDTO = await _facadeCT.AuthorizeAndStartBackgroundTask(email, password);
+                if (sessionDTO != null)
                 {
-                    // Iniciar la tarea en segundo plano con la sesión
-                    TaskBackgroundService taskBackgroundMailService = new TaskBackgroundService();
-                    _ = taskBackgroundMailService.RunBackgroundTaskAsync(session);
-
-                    MainForm mainForm = new MainForm(session);
+                    
+                    MainForm mainForm = new MainForm(_facadeCT,sessionDTO);
                     mainForm.Show();
                     this.Hide();
+                    
                 }
                 else
                 {
@@ -47,10 +48,7 @@ namespace CryptoTrackerApp
             catch (Exception ex)
             {
                 Logger.Error("An error occurred: " + ex.Message);
-            }
-            finally
-            {
-                LogManager.Shutdown();
+                MessageBox.Show("An error occurred. Please try again later.");
             }
         }
 

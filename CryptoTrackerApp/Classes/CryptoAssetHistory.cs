@@ -1,13 +1,9 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace CryptoTrackerApp.Classes
 {
-    public class CryptoPriceHistory
+    public class CryptoAssetHistory
     {
         [JsonProperty("priceUsd")]
         public decimal PriceUsd { get; set; }
