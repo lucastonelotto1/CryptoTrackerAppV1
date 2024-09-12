@@ -343,7 +343,11 @@ namespace CryptoTrackerApp
                     dataGridViewAlerts.Rows.Clear();
                     foreach (var alert in recentAlerts)
                     {
-                        dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {alert.ChangePercent}%, at {alert.Time}");
+                        // Formateo de ChangePercent a 2 decimales
+                        string formattedChangePercent = alert.ChangePercent.ToString("F2");
+
+                        // Agregar la fila al DataGridView con los datos formateados
+                        dataGridViewAlerts.Rows.Add($"{alert.CryptoIdOutOfLimit}, has changed {formattedChangePercent}%, at {alert.Time}");
                     }
                 }
                 else
@@ -361,6 +365,7 @@ namespace CryptoTrackerApp
                 LogManager.Shutdown();
             }
         }
+
 
 
         // Buttons

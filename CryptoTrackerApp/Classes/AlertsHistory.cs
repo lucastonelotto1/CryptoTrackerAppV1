@@ -15,7 +15,7 @@ namespace CryptoTrackerApp.Classes
         public string CryptoIdOutOfLimit { get; set; }
 
         [Column("ChangePercent")]
-        public string ChangePercent { get; set; }
+        public decimal ChangePercent { get; set; }
 
         [Column("Time")]
         public string Time { get; set; }    

@@ -73,11 +73,6 @@ namespace CryptoTrackerApp.DataAccessLayer.EntityFrameWork.Mapping
                     var historyDTO = new CryptoAssetHistoryDTO(price, convertedTime);
                     historyList.Add(historyDTO);
                 }
-                else
-                {
-                    // Si no se puede convertir el precio, manejar el error o ignorar este item
-                    MessageBox.Show($"Error al convertir el precio: {responseItem.priceUsd}");
-                }
             }
 
             return historyList;

@@ -5,5 +5,5 @@ using CryptoTrackerApp.DTO;
 public interface IAlertRepository
 {
     Task<List<AlertsHistory>> GetRecentAlerts(string userId, DateTime cutoffDate);
-    Task AddAlert(string userId, string cryptoIdOutOfLimit, string changePercent, string time);
+    Task AddAlert(string userId, string cryptoIdOutOfLimit, decimal changePercent, string time);
 }

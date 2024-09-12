@@ -37,7 +37,7 @@ public class AlertRepository : IAlertRepository
     }
 
 
-    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, string changePercent, string time)
+    public async Task AddAlert(string userId, string cryptoIdOutOfLimit, decimal changePercent, string time)
     {
         var alert = new AlertsHistory
         {

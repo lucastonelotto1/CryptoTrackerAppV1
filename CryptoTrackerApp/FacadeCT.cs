@@ -84,7 +84,7 @@ namespace CryptoTrackerApp
         }
 
         // Método para agregar una alerta
-        public async Task AddAlert(string userId, string cryptoIdOutOfLimit, string changePercent, string time)
+        public async Task AddAlert(string userId, string cryptoIdOutOfLimit, decimal changePercent, string time)
         {
             await _repository.Alerts.AddAlert(userId, cryptoIdOutOfLimit, changePercent, time);
             await _repository.SaveChangesAsync();
@@ -118,15 +118,15 @@ namespace CryptoTrackerApp
                 var matchingCrypto = cryptoAssets.FirstOrDefault(c => c.Symbol == favorite.CryptoId);
                 if (matchingCrypto != null)
                 {
-                    // Convertir el valor decimal a double explícitamente
-                    double originalChangePercent24Hr = (double)matchingCrypto.ChangePercent24Hr;
+                    // Usar decimal directamente sin convertir a double
+                    decimal originalChangePercent24Hr = matchingCrypto.ChangePercent24Hr;
 
                     // Usar el valor absoluto para la comparación con el límite
-                    double absoluteChangePercent24Hr = Math.Abs(originalChangePercent24Hr);
+                    decimal absoluteChangePercent24Hr = Math.Abs(originalChangePercent24Hr);
 
-                    if (absoluteChangePercent24Hr > favorite.Limit)
+                    if (absoluteChangePercent24Hr > (decimal)favorite.Limit)
                     {
-                        // Enviar el valor original sin modificar en el correo electrónico
+                        // Enviar el valor formateado en el correo electrónico (F2 = 2 decimales)
                         await _emailService.SendEmailAsync(
                             email,
                             name,
@@ -134,17 +134,15 @@ namespace CryptoTrackerApp
                             $"<h1>The cryptocurrency {matchingCrypto.Name} has changed by {originalChangePercent24Hr.ToString("F2", CultureInfo.InvariantCulture)}% in the last 24 hours.</h1>"
                         );
 
-                        // Convertir el valor original a cadena con coma antes de guardarlo en Supabase
-                        string formattedChangePercent = originalChangePercent24Hr.ToString("F2", CultureInfo.InvariantCulture).Replace('.', ',');
-
                         // Guardar el valor original sin modificar en la alerta
                         string argentinaTime = DateTime.Now.ToString("dd/MM/yyyy HH:mm");
-                        await AddAlert(userId, matchingCrypto.Name, formattedChangePercent, argentinaTime);
+
+                        // Aquí no necesitas convertir a string con coma, solo guardar el decimal directamente
+                        await AddAlert(userId, matchingCrypto.Name, originalChangePercent24Hr, argentinaTime);
                     }
                 }
             }
         }
-
 
 
 
