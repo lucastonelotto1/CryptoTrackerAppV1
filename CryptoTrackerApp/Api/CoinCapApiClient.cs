@@ -77,13 +77,7 @@ public class CoinCapApiClient : ICoinCapApiClient
 
         // Convertir dynamic a List<CryptoAssetHistoryDTO>
         List<CryptoAssetHistoryDTO> historyList = CryptoMapper.MapToCryptoAssetHistoryDTO(historyData);
-        // Filtrar los datos de los últimos 6 meses
 
-        //MessageBox.Show("Mapeado"+historyList.ToString());
-
-        var x = historyList.Where(h => ((DateTimeOffset)h.Date).ToUnixTimeMilliseconds() >= sixMonthsBack).ToList();
-
-        //MessageBox.Show("Despues del recorte"+x);
 
         return historyList.Where(h => ((DateTimeOffset)h.Date).ToUnixTimeMilliseconds() >= sixMonthsBack).ToList();
     }

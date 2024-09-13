@@ -33,7 +33,7 @@ namespace CryptoTrackerApp.Infrastructure
                     await _facadeCT.MonitorCryptoChangesAsync(userId, email, name);
 
                     // Esperar una hora antes de volver a ejecutar
-                    await Task.Delay(TimeSpan.FromSeconds(5));
+                    await Task.Delay(TimeSpan.FromHours(1));
                 }
             }
             catch (Exception ex)
